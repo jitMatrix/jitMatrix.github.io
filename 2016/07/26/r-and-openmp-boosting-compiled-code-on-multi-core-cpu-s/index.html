@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/oneXPU/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/oneXPU/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/oneXPU/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/oneXPU/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/oneXPU/css/main.css">
+
+
+<link rel="stylesheet" href="/oneXPU/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"jitmatrix.github.io","root":"/oneXPU/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="IntroductionSometimes you just need more speed. And sometime plain R does not provide it. This article is about boosting your R code with C++ and openMP. OpenMP is a parallel processing framework for">
+<meta property="og:type" content="article">
+<meta property="og:title" content="R and openMP: boosting compiled code on multi-core cpu-s">
+<meta property="og:url" content="https://jitmatrix.github.io/oneXPU/2016/07/26/r-and-openmp-boosting-compiled-code-on-multi-core-cpu-s/index.html">
+<meta property="og:site_name" content="oneXPU">
+<meta property="og:description" content="IntroductionSometimes you just need more speed. And sometime plain R does not provide it. This article is about boosting your R code with C++ and openMP. OpenMP is a parallel processing framework for">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://jitmatrix.github.io/uploads/2016/07/timings-1-1024x585.png">
+<meta property="og:image" content="https://jitmatrix.github.io/uploads/2016/07/timings_n-2-1024x585.png">
+<meta property="article:published_time" content="2016-07-26T18:10:38.000Z">
+<meta property="article:modified_time" content="2020-12-19T09:10:38.825Z">
+<meta property="article:author" content="Patric Zhao">
+<meta property="article:tag" content="multicores">
+<meta property="article:tag" content="rstats">
+<meta property="article:tag" content="Maximum Likelihood">
+<meta property="article:tag" content="multit">
+<meta property="article:tag" content="openMP">
+<meta property="article:tag" content="parallel computing">
+<meta property="article:tag" content="performance optimization">
+<meta property="article:tag" content="R">
+<meta property="article:tag" content="Rcpp">
+<meta property="article:tag" content="SSE">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://jitmatrix.github.io/uploads/2016/07/timings-1-1024x585.png">
+
+<link rel="canonical" href="https://jitmatrix.github.io/oneXPU/2016/07/26/r-and-openmp-boosting-compiled-code-on-multi-core-cpu-s/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>R and openMP: boosting compiled code on multi-core cpu-s | oneXPU</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/oneXPU/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">oneXPU</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Diving into Parallel Technology</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/oneXPU/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/oneXPU/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://jitmatrix.github.io/oneXPU/2016/07/26/r-and-openmp-boosting-compiled-code-on-multi-core-cpu-s/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/oneXPU/images/avatar.gif">
+      <meta itemprop="name" content="Patric Zhao">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="oneXPU">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          R and openMP: boosting compiled code on multi-core cpu-s
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2016-07-26 18:10:38" itemprop="dateCreated datePublished" datetime="2016-07-26T18:10:38+00:00">2016-07-26</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2020-12-19 09:10:38" itemprop="dateModified" datetime="2020-12-19T09:10:38+00:00">2020-12-19</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/oneXPU/categories/Accelerators/" itemprop="url" rel="index"><span itemprop="name">Accelerators</span></a>
+                </span>
+                  , 
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/oneXPU/categories/Accelerators/MultiCores/" itemprop="url" rel="index"><span itemprop="name">MultiCores</span></a>
+                </span>
+                  , 
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/oneXPU/categories/Accelerators/MultiCores/Vectorization/" itemprop="url" rel="index"><span itemprop="name">Vectorization</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h1><p>Sometimes you just need more speed. And sometime plain R does not provide it. This article is about boosting your R code with C++ and openMP. OpenMP is a parallel processing framework for shared memory systems. This is an excellent way to use all the cpu cores that are sitting, and often just idling, in any modern desktop and laptop. Below, I will take a simple, even trivial problem—ML estimation of normal distribution parameters—and solve it first in R, thereafter I write the likelihood function in standard single-threaded C++, and finally in parallel using C++ and openMP. Obviously, there are easier ways to find sample mean and variance but this is not the point. Read it, and try to write your own openMP program that does something useful!</p>
+<h1 id="R-for-Simplicity"><a href="#R-for-Simplicity" class="headerlink" title="R for Simplicity"></a>R for Simplicity</h1><p>Assume we have a sample of random normals and let’s estimate the parameters (mean and standard deviation) by Maximum Likelihood (ML). We start with pure R. The log-likelihood function may look like this:</p>
+<figure class="highlight r"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">llR &lt;- <span class="keyword">function</span>(par, x) &#123;</span><br><span class="line">  mu &lt;- par[<span class="number">1</span>]</span><br><span class="line">  sigma &lt;- par[<span class="number">2</span>]</span><br><span class="line">  <span class="built_in">sum</span>(-<span class="number">1</span>/<span class="number">2</span>*<span class="built_in">log</span>(<span class="number">2</span>*<span class="built_in">pi</span>) - <span class="built_in">log</span>(sigma) - <span class="number">1</span>/<span class="number">2</span>*((x - mu)^<span class="number">2</span>)/sigma^<span class="number">2</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Note that this code is fully vectorized (<code>(x-mu)</code> is written with no explicit loop) and hence very fast. Obviously, this is a trivial example, but it is easy to understand and parallelize. Now generate some data</p>
+<figure class="highlight r"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">x &lt;- rnorm(<span class="number">1e6</span>)</span><br></pre></td></tr></table></figure>
+<p>and start values, a bit off to give the computer more work:</p>
+<figure class="highlight r"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">start &lt;- <span class="built_in">c</span>(<span class="number">1</span>,<span class="number">1</span>)</span><br></pre></td></tr></table></figure>
+<p>Estimate it (using maxLik package):</p>
+<figure class="highlight r"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">library(maxLik)</span><br><span class="line">system.time(m &lt;- maxLik(llR, start=start, x=x))</span><br><span class="line"></span><br><span class="line"><span class="comment"># user system elapsed</span></span><br><span class="line"><span class="comment"># 2.740  0.184   2.931</span></span><br><span class="line"></span><br><span class="line">summary(m)</span><br><span class="line"></span><br><span class="line"><span class="comment"># --------------------------------------------</span></span><br><span class="line"><span class="comment"># Maximum Likelihood estimation</span></span><br><span class="line"><span class="comment"># Newton-Raphson maximisation, 6 iterations</span></span><br><span class="line"><span class="comment"># Return code 2: successive function values within tolerance limit</span></span><br><span class="line"><span class="comment"># Log-Likelihood: -1419125</span></span><br><span class="line"><span class="comment"># 2 free parameters</span></span><br><span class="line"><span class="comment"># Estimates:</span></span><br><span class="line"><span class="comment"># Estimate Std. error t value Pr(&gt; t)</span></span><br><span class="line"><span class="comment"># [1,] 0.0010318 0.0010001 1.032 0.302</span></span><br><span class="line"><span class="comment"># [2,] 1.0001867 0.0007072 1414.236 &lt;2e-16 ***</span></span><br><span class="line"><span class="comment"># ---</span></span><br><span class="line"><span class="comment"># Signif. codes: 0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1</span></span><br><span class="line"><span class="comment"># --------------------------------------------</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>The code runs 2.6s on an i5-2450M laptop using a single cpu core. First, let’s squeeze more out of the R code. Despite being vectorized, the function can be improved by moving the repeated calculations out of the (vectorized) loop. We can re-write it as:</p>
+<figure class="highlight r"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">llROpt &lt;- <span class="keyword">function</span>(par, x) &#123;</span><br><span class="line">  mu &lt;- par[<span class="number">1</span>]</span><br><span class="line">  sigma &lt;- par[<span class="number">2</span>]</span><br><span class="line">  N &lt;- <span class="built_in">length</span>(x)</span><br><span class="line">  -N*(<span class="number">0.5</span>*<span class="built_in">log</span>(<span class="number">2</span>*<span class="built_in">pi</span>) + <span class="built_in">log</span>(sigma)) - <span class="number">0.5</span>*<span class="built_in">sum</span>((x - mu)^<span class="number">2</span>)/sigma^<span class="number">2</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Now only <code>(x - mu)^2</code> is computed as vectors. Run it:</p>
+<figure class="highlight r"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">library(maxLik)</span><br><span class="line">system.time(m &lt;- maxLik(llROpt, start=start, x=x))</span><br><span class="line"></span><br><span class="line"><span class="comment"># user  system elapsed</span></span><br><span class="line"><span class="comment"># 0.816   0.000   0.818 </span></span><br></pre></td></tr></table></figure>
+<p>You see—just a simple optimization gave a more than three–fold speed improvement! I don’t report the results any more, as those are virtually identical.</p>
+<h1 id="C-for-Speed"><a href="#C-for-Speed" class="headerlink" title="C for Speed"></a>C for Speed</h1><p>Now let’s implement the same function in C++. R itself is written in C, however there is an excellent library, Rcpp, that makes integrating R and C++ code very easy. It is beyond the scope of this post to teach readers C and explain the differences between C and C++. But remember that Rcpp (and hence C++) offers a substantially easier interface for exchanging data between R and compiled code than the default R API. Let’s save the log-likelihood function in file loglik.cpp. It might look like this:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;cmath&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;Rcpp.h&gt;</span></span></span><br><span class="line">  </span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> Rcpp;</span><br><span class="line">  </span><br><span class="line"><span class="function">RcppExport SEXP <span class="title">loglik</span><span class="params">(SEXP s_beta, SEXP s_x)</span> </span>&#123;</span><br><span class="line">  <span class="function">NumericVector <span class="title">x</span><span class="params">(s_x)</span></span>;</span><br><span class="line">  <span class="function">NumericVector <span class="title">beta</span><span class="params">(s_beta)</span></span>;</span><br><span class="line">  <span class="comment">// make Rcpp vector out of R SEXP</span></span><br><span class="line">  <span class="keyword">double</span> mu = beta[<span class="number">0</span>];</span><br><span class="line">  <span class="comment">// first element is 0 in C++</span></span><br><span class="line">  <span class="keyword">double</span> sigma = beta[<span class="number">1</span>];</span><br><span class="line">  <span class="keyword">double</span> ll = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; x.length(); i++) &#123;</span><br><span class="line">      ll -= (x[i] - mu)*(x[i] - mu);</span><br><span class="line">  &#125;</span><br><span class="line">  ll *= <span class="number">0.5</span>/sigma/sigma;</span><br><span class="line">  ll -= (<span class="number">0.5</span>*<span class="built_in">log</span>(<span class="number">2</span>*M_PI) + <span class="built_in">log</span>(sigma))*x.length();</span><br><span class="line">  <span class="function">NumericVector <span class="title">result</span><span class="params">(<span class="number">1</span>, ll)</span></span>;</span><br><span class="line">  <span class="comment">// create &#x27;numeric&#x27; vector of length 1, filled with</span></span><br><span class="line">  <span class="comment">// ll values</span></span><br><span class="line">  <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>The function takes two parameters, <code>s_beta</code> and <code>s_x</code>. These are passed as R general vectors, denoted <code>SEXP</code> in C. As SEXP-s are complicated to handle, the following two lines transform those to ‘NumericVector’s, essentially equivalent to R ‘numeric()’. The following code is easy to understand. We loop over all iterations and add (x[i] - mu)^2. Loops are cheap in C++. Afterwards, we add the constant terms only once. Note that unlike R, indices in C++ start from zero. This program must be compiled first. Normally the command</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">R CMD SHLIB loglik.cpp</span><br></pre></td></tr></table></figure>
+<p>takes care of all the R-specific dependencies, and if everything goes well, it results in the DLL file. Rcpp requires additional include files which must be specified when compiling, the location of which can be queried with <code>Rcpp:::CxxFlags()</code> command in R, or as a bash one-liner, one may compile with</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PKG_CXXFLAGS=$(<span class="built_in">echo</span> <span class="string">&#x27;Rcpp:::CxxFlags()&#x27;</span>| R --vanilla --slave) R CMD SHLIB loglik.cpp</span><br></pre></td></tr></table></figure>
+<p>Now we have to create the R-side of the log-likelihood function. It may look like this:</p>
+<figure class="highlight r"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">llc &lt;- <span class="keyword">function</span>(par, x) &#123;</span><br><span class="line">  library(Rcpp)</span><br><span class="line">  dyn.load(<span class="string">&quot;loglik.so&quot;</span>) <span class="comment"># extension &#x27;.so&#x27; is platform-specific!</span></span><br><span class="line">  res &lt;- .Call(<span class="string">&quot;loglik&quot;</span>, par, x)</span><br><span class="line">  res</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>It takes arguments ‘par’ and ‘x’, and passes these down to the DLL. Before we can invoke (<code>.Call</code>) the compiled code, we must load the DLL. You may need to adjust the exact name according to your platform here. Note also that I haven’t introduced any security checks neither at the R nor the C++ side. This is a quick recipe for crashing your session, but let’s avoid it here in order to keep the code simple. Now let’s run it:</p>
+<figure class="highlight r"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">system.time(m &lt;- maxLik(llc, start=start, x=x))</span><br><span class="line"></span><br><span class="line"><span class="comment"># user  system elapsed</span></span><br><span class="line"><span class="comment"># 0.896   0.020   0.913 </span></span><br></pre></td></tr></table></figure>
+<p>The C code runs almost exactly as fast as the optimized R. In case of well vectorized computations, there seems to be little scope for improving the speed by switching to C.</p>
+<h1 id="Parallelizing-the-code-on-multicore-CPUs"><a href="#Parallelizing-the-code-on-multicore-CPUs" class="headerlink" title="Parallelizing the code on multicore CPUs"></a>Parallelizing the code on multicore CPUs</h1><p>Now it is time to write a parallel version of the program. Take the C++ version as the point of departure and re-write it like this:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;cmath&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;Rcpp.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;omp.h&gt;</span></span></span><br><span class="line">  </span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> Rcpp;</span><br><span class="line">  </span><br><span class="line"><span class="function">RcppExport SEXP <span class="title">loglik_MP</span><span class="params">(SEXP s_beta, SEXP s_x, SEXP s_nCpu)</span> </span>&#123;</span><br><span class="line">    <span class="function">NumericVector <span class="title">x</span><span class="params">(s_x)</span></span>;</span><br><span class="line">    <span class="function">NumericVector <span class="title">beta</span><span class="params">(s_beta)</span></span>;</span><br><span class="line">    <span class="keyword">int</span> n_cpu = IntegerVector(s_nCpu)[<span class="number">0</span>];</span><br><span class="line">    <span class="keyword">double</span> mu = beta[<span class="number">0</span>];</span><br><span class="line">    <span class="keyword">double</span> sigma = beta[<span class="number">1</span>];</span><br><span class="line">    <span class="keyword">double</span> ll = <span class="number">0</span>;</span><br><span class="line">    omp_set_dynamic(<span class="number">0</span>);         <span class="comment">// Explicitly disable dynamic teams</span></span><br><span class="line">    omp_set_num_threads(n_cpu); <span class="comment">// Use n_cpu threads for all</span></span><br><span class="line">                                <span class="comment">// consecutive parallel regions</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">pragma</span> omp parallel</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">double</span> ll_thread = <span class="number">0</span>;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">pragma</span> omp for </span></span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; x.length(); i++) &#123;</span><br><span class="line">            ll_thread -= (x[i] - mu)*(x[i] - mu);</span><br><span class="line">        &#125;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">pragma</span> omp critical</span></span><br><span class="line">        &#123;</span><br><span class="line">            ll += ll_thread;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    ll *= <span class="number">0.5</span>/sigma/sigma;</span><br><span class="line">    ll -= (<span class="number">0.5</span>*<span class="built_in">log</span>(<span class="number">2</span>*M_PI) + <span class="built_in">log</span>(sigma))*x.length();</span><br><span class="line">    <span class="function">NumericVector <span class="title">result</span><span class="params">(<span class="number">1</span>, ll)</span></span>;</span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>The code structure is rather similar to the previous example. The most notable novelties are the ‘#pragma omp’ directives. These tell the compiler to insert parallelized code here. Not all compilers understand it, and others may need special flags, such as <code>-fopenmp</code> in case of gcc, to enable openMP support. Otherwise, gcc just happily ignores the directives and you will get a single-threaded application. The likelihood function also includes the argument _n_Cpu_, and the commands <code>omp_set_dynamic(0)</code> and <code>omp_set_num_threads(n_cpu)</code>. This allows to manipulate the number of threads explicitly, it is usually not necessary in the production code. For compiling the program, we can add <code>-fopenmp</code> to our one-liner above:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PKG_CXXFLAGS=<span class="string">&quot;<span class="subst">$(echo &#x27;Rcpp:::CxxFlags()</span>&#x27;| R --vanilla --slave) -fopenmp&quot;</span> R CMD SHLIB loglikMP.cpp</span><br></pre></td></tr></table></figure>
+<p>assuming it was saved in “loglikMP.cpp”. But now you should seriously consider writing a makefile instead. We use three openMP directives here:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">pragma</span> omp parallel</span></span><br><span class="line">&#123;</span><br><span class="line"><span class="comment">/* code block */</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>This is the most important omp directive. It forces the code block to be run in multiple threads, by all threads simultaneously. In particular, variable _ll_thread_ is declared in all threads separately and is thus a thread-specific variable. As OMP is a shared-memory parallel framework, all data declared before <em>#pragma omp parallel</em> is accessible by all threads. This is very convenient as long as we only read it. The last directive is closely related:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">pragma</span> omp critical</span></span><br><span class="line">&#123;</span><br><span class="line"><span class="comment">/* code block */</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>This denotes a piece of threaded code that must be run by only one thread simultaneously. In the example above all threads execute <code>ll += ll_thread</code>, but only one at a time, waiting for the previous thread to finish if necessary. This is because now we are writing to shared memory: variable <em>ll</em> is defined before we split the code into threads. Allowing multiple threads to simultaneously write in the same shared variable almost always leads to trouble. Finally,</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">pragma</span> omp for</span></span><br><span class="line"><span class="keyword">for</span>(...) &#123; <span class="comment">/* code block */</span> &#125;</span><br></pre></td></tr></table></figure>
+<p>splits the for loop between threads in a way that each thread will only go through a fraction of the full loop. For instance, in our case the full loop goes over 1M observations, but in case of 8 threads, each will receive only 125k. As the compiler has to generate code for this type of loop sharing, parallel loops are less flexible than ordinary single-threaded loops. For many data types, summing the thread–specific values we did with <code>#pragma omp critical</code> can be achieved directly in the loop by specifying <code>#pragma omp parallel for reduction(+:ll)</code> instead. As all the parallel work is done at C level, the R code remains essentially unchanged. We may write the corresponding loglik function as</p>
+<figure class="highlight r"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">llcMP &lt;- <span class="keyword">function</span>(par, nCpu=<span class="number">1</span>, x) &#123;</span><br><span class="line">  library(Rcpp)</span><br><span class="line">  dyn.load(<span class="string">&quot;loglikMP.so&quot;</span>)</span><br><span class="line">  res &lt;- .Call(<span class="string">&quot;loglik_MP&quot;</span>, par, x, <span class="built_in">as.integer</span>(nCpu))</span><br><span class="line">  res</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>How fast is this?</p>
+<figure class="highlight r"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">system.time(m &lt;- maxLik(llcMP, start=start, nCpu=<span class="number">4</span>, x=x))</span><br><span class="line"><span class="comment"># user  system elapsed</span></span><br><span class="line"><span class="comment"># 0.732   0.016   0.203 </span></span><br></pre></td></tr></table></figure>
+<p>On 2-core/4-thread cpu, we got a more than four–fold speed boost. This is impressive, given the cpu does have 2 complete cores only. Obviously, the performance improvement depends on the task. This particular problem is embarrasingly parallel, the threads can work completely independent of each other.</p>
+<h1 id="Timing-Examples"><a href="#Timing-Examples" class="headerlink" title="Timing Examples"></a>Timing Examples</h1><p>As an extended timing example, we run all the (optimized) examples above using a Xeon-L5420 cpu with 8 cores, single thread per core. The figure below depicts the compute time for single-threaded R and C++ code, and for C++/openMP code with 8 threads, as a function of data size. <img src="/uploads/2016/07/timings-1-1024x585.png" alt="timings"> The figure reveals several facts. First, for non-parallelized code we can see that</p>
+<ol>
+<li> Optimized R and C++ code are of virtually identical speed.</li>
+<li> compute time grows linearily in data size.</li>
+</ol>
+<p>For openMP code the figure tells</p>
+<ol start="3">
+<li> openMP with 8 threads is substantially slower for data size less than about 100k. For larger data, multi-threaded approach is clearly faster.</li>
+<li> openMP execution time is almost constant for data size up to 4M. For larger data vectors, it increases linearily. This suggests that for smaller data size, openMP execution time is dominated by thread creation and management overheads, not by computations.</li>
+</ol>
+<p>Finally, let’s compare the computation times for different number of threads for 8M data size. <img src="/uploads/2016/07/timings_n-2-1024x585.png" alt="timings_n"> The figure shows the run time for single threaded versions of the code (R and C), and multi-threaded openMP versions with 1 to 9 threads (OMP.1 to OMP.9).</p>
+<ol>
+<li> More cpus give us shorter execution times. 1-thread OMP will run almost 1.7 times slower than 8-threaded version (3.9 and 2.3 s respectively).</li>
+<li> The gain of more cpu cores working on the problem levels off quickly. Little noticeable gain is visible for more than 3 cores. It indicates that the calculations are only partly limited by computing-power. Another major bottleneck may be memory speed.</li>
+<li> Last, and most strikingly, even the single threaded OMP version of the code is 4.8 times faster than single-threaded C++ version with no OMP (18.6 and 3.9 s respectively)! This is a feature of the particular task, the compiler and the processor architecture. OMP parallel for–loops allow the compiler to deduce that the loops are in fact independent, and use faster SSE instruction set. This substantially boosts the speed but requires more memory bandwidth.</li>
+</ol>
+<h1 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h1><p>With the examples above I wanted to show that for many tasks, openMP is not hard to use. If you know some C++, parallelizing your code may be quite easy. True, the examples above are easy to parallelize at R-level as well, but there are many tasks where this is not true. Obviously, in the text above I just scratched the surface of openMP. If you consider using it, there are many excellent sources on the web. Take a look!</p>
+<p>I am grateful to Peng Zhao for explaining the parallel loops and SSE instruction set.</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/oneXPU/tags/multicores/" rel="tag"># multicores</a>
+              <a href="/oneXPU/tags/rstats/" rel="tag"># rstats</a>
+              <a href="/oneXPU/tags/Maximum-Likelihood/" rel="tag"># Maximum Likelihood</a>
+              <a href="/oneXPU/tags/multit/" rel="tag"># multit</a>
+              <a href="/oneXPU/tags/openMP/" rel="tag"># openMP</a>
+              <a href="/oneXPU/tags/parallel-computing/" rel="tag"># parallel computing</a>
+              <a href="/oneXPU/tags/performance-optimization/" rel="tag"># performance optimization</a>
+              <a href="/oneXPU/tags/R/" rel="tag"># R</a>
+              <a href="/oneXPU/tags/Rcpp/" rel="tag"># Rcpp</a>
+              <a href="/oneXPU/tags/SSE/" rel="tag"># SSE</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/oneXPU/2016/05/09/r-dnn-cuda-multigpu/" rel="prev" title="R for Deep Learning (III): CUDA and MultiGPUs Acceleration">
+      <i class="fa fa-chevron-left"></i> R for Deep Learning (III): CUDA and MultiGPUs Acceleration
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/oneXPU/2016/09/10/r-with-parallel-computing/" rel="next" title="R with Parallel Computing from User Perspectives">
+      R with Parallel Computing from User Perspectives <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Introduction"><span class="nav-number">1.</span> <span class="nav-text">Introduction</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#R-for-Simplicity"><span class="nav-number">2.</span> <span class="nav-text">R for Simplicity</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#C-for-Speed"><span class="nav-number">3.</span> <span class="nav-text">C for Speed</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Parallelizing-the-code-on-multicore-CPUs"><span class="nav-number">4.</span> <span class="nav-text">Parallelizing the code on multicore CPUs</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Timing-Examples"><span class="nav-number">5.</span> <span class="nav-text">Timing Examples</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Conclusion"><span class="nav-number">6.</span> <span class="nav-text">Conclusion</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Patric Zhao</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/oneXPU/archives/">
+        
+          <span class="site-state-item-count">10</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">20</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">56</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Patric Zhao</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/oneXPU/lib/anime.min.js"></script>
+  <script src="/oneXPU/lib/velocity/velocity.min.js"></script>
+  <script src="/oneXPU/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/oneXPU/js/utils.js"></script>
+
+<script src="/oneXPU/js/motion.js"></script>
+
+
+<script src="/oneXPU/js/schemes/muse.js"></script>
+
+
+<script src="/oneXPU/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

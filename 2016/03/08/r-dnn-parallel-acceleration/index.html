@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/oneXPU/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/oneXPU/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/oneXPU/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/oneXPU/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/oneXPU/css/main.css">
+
+
+<link rel="stylesheet" href="/oneXPU/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"jitmatrix.github.io","root":"/oneXPU/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="I would like to thank  Jun Ma  and all other technical reviewers and readers for their informative comments and suggestions in this post.   50 years of Data Science, David Donoho, 2015 **Computing wi">
+<meta property="og:type" content="article">
+<meta property="og:title" content="R for Deep Learning (II): Achieve High-Performance DNN with Parallel Acceleration">
+<meta property="og:url" content="https://jitmatrix.github.io/oneXPU/2016/03/08/r-dnn-parallel-acceleration/index.html">
+<meta property="og:site_name" content="oneXPU">
+<meta property="og:description" content="I would like to thank  Jun Ma  and all other technical reviewers and readers for their informative comments and suggestions in this post.   50 years of Data Science, David Donoho, 2015 **Computing wi">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://jitmatrix.github.io/uploads/2016/02/mnist.jpg">
+<meta property="og:image" content="https://jitmatrix.github.io/uploads/2016/02/Runtime.RDNN_.H2O.png">
+<meta property="og:image" content="https://jitmatrix.github.io/uploads/2016/02/R_BLAS-300x144.png">
+<meta property="og:image" content="https://jitmatrix.github.io/uploads/2016/02/rdnn_gemm.png">
+<meta property="og:image" content="https://jitmatrix.github.io/uploads/2016/02/runtime.breakdown.nvblas.png">
+<meta property="og:image" content="https://jitmatrix.github.io/uploads/2016/03/opt2.png">
+<meta property="og:image" content="https://jitmatrix.github.io/uploads/2016/02/DNN.Optimization.png">
+<meta property="og:image" content="https://jitmatrix.github.io/uploads/2016/02/RDNN_nvBLAS_runtime.png">
+<meta property="og:image" content="https://jitmatrix.github.io/uploads/2016/03/MNIST.png">
+<meta property="article:published_time" content="2016-03-08T14:18:34.000Z">
+<meta property="article:modified_time" content="2020-12-19T09:10:38.825Z">
+<meta property="article:author" content="Patric Zhao">
+<meta property="article:tag" content="multicores">
+<meta property="article:tag" content="rstats">
+<meta property="article:tag" content="parallel computing">
+<meta property="article:tag" content="performance optimization">
+<meta property="article:tag" content="R">
+<meta property="article:tag" content="deep learning">
+<meta property="article:tag" content="H2O">
+<meta property="article:tag" content="profiling">
+<meta property="article:tag" content="classification">
+<meta property="article:tag" content="cuBLAS">
+<meta property="article:tag" content="dnn">
+<meta property="article:tag" content="GPU">
+<meta property="article:tag" content="high performance">
+<meta property="article:tag" content="MKL">
+<meta property="article:tag" content="MNIST">
+<meta property="article:tag" content="multithreads">
+<meta property="article:tag" content="openblas">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://jitmatrix.github.io/uploads/2016/02/mnist.jpg">
+
+<link rel="canonical" href="https://jitmatrix.github.io/oneXPU/2016/03/08/r-dnn-parallel-acceleration/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>R for Deep Learning (II): Achieve High-Performance DNN with Parallel Acceleration | oneXPU</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/oneXPU/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">oneXPU</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Diving into Parallel Technology</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/oneXPU/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/oneXPU/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://jitmatrix.github.io/oneXPU/2016/03/08/r-dnn-parallel-acceleration/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/oneXPU/images/avatar.gif">
+      <meta itemprop="name" content="Patric Zhao">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="oneXPU">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          R for Deep Learning (II): Achieve High-Performance DNN with Parallel Acceleration
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2016-03-08 14:18:34" itemprop="dateCreated datePublished" datetime="2016-03-08T14:18:34+00:00">2016-03-08</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2020-12-19 09:10:38" itemprop="dateModified" datetime="2020-12-19T09:10:38+00:00">2020-12-19</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/oneXPU/categories/GPGPU/" itemprop="url" rel="index"><span itemprop="name">GPGPU</span></a>
+                </span>
+                  , 
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/oneXPU/categories/GPGPU/MultiCores/" itemprop="url" rel="index"><span itemprop="name">MultiCores</span></a>
+                </span>
+                  , 
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/oneXPU/categories/GPGPU/MultiCores/Performance-Optimizaiton/" itemprop="url" rel="index"><span itemprop="name">Performance Optimizaiton</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <hr>
+<p><em>I would like to thank  <a target="_blank" rel="noopener" href="http://junma5.weebly.com/">Jun Ma</a>  and all other technical reviewers and readers for their informative comments and suggestions in this post.</em></p>
+<hr>
+<blockquote>
+<p><em><strong><a href="courses.csail.mit.edu/18.337/2015/docs/50YearsDataScience.pdf">50 years of Data Science</a></strong>, David Donoho, 2015</em></p>
+<p><em>**Computing with Data.**Every data scientist should know and use several languages for data analysis and data processing. These can include popular languages like R and Python …</em> <em>Beyond basic knowledge of languages, data scientists need to keep current on new idioms for efficiently using those languages and need to understand the deeper issues associated with computational efficiency.</em></p>
+</blockquote>
+<p>  In the previous post, <a target="_blank" rel="noopener" href="http://www.parallelr.com/r-deep-neural-network-from-scratch/">R for deep learning (I)</a>, I introduced the core components of neural networks and illustrated how to implement it from scratch by R. Now, I will focus on computational performance and efficiency of R’s implementation, especially for the parallel algorithm on multicores CPU and <a target="_blank" rel="noopener" href="http://www.nvidia.com/object/tesla-supercomputing-solutions.html">NVIDIA GPU</a> architectures.  </p>
+<h2 id="Performance-Profiling"><a href="#Performance-Profiling" class="headerlink" title="Performance Profiling"></a>Performance Profiling</h2><p>In this post, we are going to a little big dataset, <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/MNIST_database">MNIST</a>, for performance analysis. <a target="_blank" rel="noopener" href="http://yann.lecun.com/exdb/mnist/">MNIST</a> widely used to measure the accuracy of classification by handwritten digits in machine learning field, and also used for the competition in <a target="_blank" rel="noopener" href="https://www.kaggle.com/c/digit-recognizer">Kaggle</a> (data in download page or <a target="_blank" rel="noopener" href="http://www.parallelr.com/materials/3_ParDNN/">here</a>). <a target="_blank" rel="noopener" href="http://yann.lecun.com/">Yann</a> has provided the classification results based on various machine learning algorithms on his <a target="_blank" rel="noopener" href="http://yann.lecun.com/exdb/mnist/">page</a>. <a href="/uploads/2016/02/mnist.jpg"><img src="/uploads/2016/02/mnist.jpg" alt="mnist"></a></p>
+<p>Picture.1 Handwritten Digits in MNIST dataset</p>
+<p>The MNIST database contains 60,000 training images and 10,000 testing images. Each of image is represented by 28*28 points so totally  784 points. In this post, I will train the neural network with 784 points as input features and the number of 0-9 as output classes,  then compare the runtime of our R DNN code with <a target="_blank" rel="noopener" href="http://www.h2o.ai/verticals/algos/deep-learning/">H2O deep learning</a> implementations for 2-layers networks of the various number of hidden units (HU).</p>
+<figure class="highlight r"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># h2o</span></span><br><span class="line">library(h2o)</span><br><span class="line"><span class="comment"># single thread</span></span><br><span class="line">h2o.init()</span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line">train_file &lt;- <span class="string">&quot;https://h2o-public-test-data.s3.amazonaws.com/bigdata/laptop/mnist/train.csv.gz&quot;</span></span><br><span class="line">test_file &lt;- <span class="string">&quot;https://h2o-public-test-data.s3.amazonaws.com/bigdata/laptop/mnist/test.csv.gz&quot;</span></span><br><span class="line"> </span><br><span class="line">train &lt;- h2o.importFile(train_file)</span><br><span class="line">test  &lt;- h2o.importFile(test_file)</span><br><span class="line"> </span><br><span class="line"><span class="comment"># To see a brief summary of the data, run the following command</span></span><br><span class="line">summary(train)</span><br><span class="line">summary(test)</span><br><span class="line"> </span><br><span class="line">y &lt;- <span class="string">&quot;C785&quot;</span></span><br><span class="line">x &lt;- setdiff(<span class="built_in">names</span>(train), y)</span><br><span class="line"> </span><br><span class="line"><span class="comment"># We encode the response column as categorical for multinomial</span></span><br><span class="line"><span class="comment">#classification</span></span><br><span class="line">train[,y] &lt;- as.factor(train[,y])</span><br><span class="line">test[,y]  &lt;- as.factor(test[,y])</span><br><span class="line"> </span><br><span class="line"><span class="comment"># Train a Deep Learning model and valid</span></span><br><span class="line">system.time(</span><br><span class="line">  model_cv &lt;- h2o.deeplearning(x = x,</span><br><span class="line">                               y = y,</span><br><span class="line">                               training_frame = train,</span><br><span class="line">                               distribution = <span class="string">&quot;multinomial&quot;</span>,</span><br><span class="line">                               activation = <span class="string">&quot;Rectifier&quot;</span>,</span><br><span class="line">                               hidden = <span class="built_in">c</span>(<span class="number">32</span>),</span><br><span class="line">                               l1 = <span class="number">1e-5</span>,</span><br><span class="line">                               epochs = <span class="number">200</span>)</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<p>As I know, H2O is  the fast and most popular deep learning package in R platform implemented by Java in the backend. Thus, it will be valuable to know how much performance gap between native R code and  the mature package. As below barplot shown, the hidden units of 32, 64 and 128 are tested in 200 steps. <a href="/uploads/2016/02/Runtime.RDNN_.H2O.png"><img src="/uploads/2016/02/Runtime.RDNN_.H2O.png" alt="Runtime.RDNN.H2O"></a> Obviously,  the R DNN is significantly slow than H2O, and the runtime increases with the number of hidden units quickly. For more details, we break down the R DNN runtime into each function call  by Rprof() and summaryRprof() which report out the final results including 4 parts: <em>total.time</em>, <em>total.pct</em>, <em>self.time</em> and <em>self.pct</em>. The <em>self.time</em> and <em>self.pct</em> columns represent the elapsed time for each function, excluding the time from its inner called functions. The <em>total.time</em> and <em>total.pct</em> columns mean the total elapsed time for each function including the time spent on function calls [<a target="_blank" rel="noopener" href="https://www.packtpub.com/application-development/r-high-performance-programming">Aloysius Lim</a>]. From the profiling results, we can see the top 1 time-consuming function is *<em>“%</em>%”** which represents matrix multiplications and usually people call it <strong>GEMM</strong> (GEneral Matrix Multiplication).  </p>
+<figure class="highlight r"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line">&gt; Rprof()</span><br><span class="line">&gt; mnist.model &lt;- train.dnn(x=<span class="number">1</span>:<span class="number">784</span>, y=<span class="number">785</span>, traindata=train, hidden=<span class="number">64</span>, maxit=<span class="number">200</span>, display=<span class="number">50</span>)</span><br><span class="line">&gt; Rprof(<span class="literal">NULL</span>)</span><br><span class="line">&gt; summaryRprof()</span><br><span class="line">$by.self</span><br><span class="line">                   self.time self.pct total.time total.pct</span><br><span class="line"><span class="string">&quot;%*%&quot;</span>                <span class="number">1250.08</span>    <span class="number">90.19</span>    <span class="number">1250.08</span>     <span class="number">90.19</span></span><br><span class="line"><span class="string">&quot;t.default&quot;</span>            <span class="number">61.62</span>     <span class="number">4.45</span>      <span class="number">61.62</span>      <span class="number">4.45</span></span><br><span class="line"><span class="string">&quot;pmax&quot;</span>                 <span class="number">24.40</span>     <span class="number">1.76</span>      <span class="number">28.42</span>      <span class="number">2.05</span></span><br><span class="line"><span class="string">&quot;aperm.default&quot;</span>        <span class="number">11.60</span>     <span class="number">0.84</span>      <span class="number">11.60</span>      <span class="number">0.84</span></span><br><span class="line"><span class="string">&quot;array&quot;</span>                <span class="number">10.36</span>     <span class="number">0.75</span>      <span class="number">10.36</span>      <span class="number">0.75</span></span><br><span class="line"><span class="string">&quot;train.dnn&quot;</span>             <span class="number">9.74</span>     <span class="number">0.70</span>    <span class="number">1386.00</span>    <span class="number">100.00</span></span><br><span class="line"><span class="string">&quot;&lt;=&quot;</span>                    <span class="number">5.72</span>     <span class="number">0.41</span>       <span class="number">5.72</span>      <span class="number">0.41</span></span><br><span class="line"><span class="string">&quot;mostattributes&lt;-&quot;</span>      <span class="number">4.02</span>     <span class="number">0.29</span>       <span class="number">4.02</span>      <span class="number">0.29</span></span><br><span class="line"><span class="string">&quot;exp&quot;</span>                   <span class="number">3.60</span>     <span class="number">0.26</span>       <span class="number">3.60</span>      <span class="number">0.26</span></span><br><span class="line"><span class="string">&quot;sweep&quot;</span>                 <span class="number">1.58</span>     <span class="number">0.11</span>     <span class="number">676.32</span>     <span class="number">48.80</span></span><br><span class="line"><span class="string">&quot;is.data.frame&quot;</span>         <span class="number">1.28</span>     <span class="number">0.09</span>       <span class="number">1.28</span>      <span class="number">0.09</span></span><br><span class="line"><span class="string">&quot;colSums&quot;</span>               <span class="number">0.86</span>     <span class="number">0.06</span>       <span class="number">0.86</span>      <span class="number">0.06</span></span><br><span class="line"><span class="string">&quot;/&quot;</span>                     <span class="number">0.52</span>     <span class="number">0.04</span>       <span class="number">0.52</span>      <span class="number">0.04</span></span><br><span class="line"><span class="string">&quot;rowSums&quot;</span>               <span class="number">0.36</span>     <span class="number">0.03</span>       <span class="number">0.36</span>      <span class="number">0.03</span></span><br><span class="line"><span class="string">&quot;unname&quot;</span>                <span class="number">0.18</span>     <span class="number">0.01</span>       <span class="number">1.46</span>      <span class="number">0.11</span></span><br><span class="line"><span class="string">&quot;-&quot;</span>                     <span class="number">0.04</span>     <span class="number">0.00</span>       <span class="number">0.04</span>      <span class="number">0.00</span></span><br><span class="line"><span class="string">&quot;t&quot;</span>                     <span class="number">0.02</span>     <span class="number">0.00</span>      <span class="number">61.64</span>      <span class="number">4.45</span></span><br><span class="line"><span class="string">&quot;sum&quot;</span>                   <span class="number">0.02</span>     <span class="number">0.00</span>       <span class="number">0.02</span>      <span class="number">0.00</span></span><br><span class="line"> </span><br><span class="line">$by.total</span><br><span class="line">                   total.time total.pct self.time self.pct</span><br><span class="line"><span class="string">&quot;train.dnn&quot;</span>           <span class="number">1386.00</span>    <span class="number">100.00</span>      <span class="number">9.74</span>     <span class="number">0.70</span></span><br><span class="line"><span class="string">&quot;%*%&quot;</span>                 <span class="number">1250.08</span>     <span class="number">90.19</span>   <span class="number">1250.08</span>    <span class="number">90.19</span></span><br><span class="line"><span class="string">&quot;sweep&quot;</span>                <span class="number">676.32</span>     <span class="number">48.80</span>      <span class="number">1.58</span>     <span class="number">0.11</span></span><br><span class="line"><span class="string">&quot;t&quot;</span>                     <span class="number">61.64</span>      <span class="number">4.45</span>      <span class="number">0.02</span>     <span class="number">0.00</span></span><br><span class="line"><span class="string">&quot;t.default&quot;</span>             <span class="number">61.62</span>      <span class="number">4.45</span>     <span class="number">61.62</span>     <span class="number">4.45</span></span><br><span class="line"><span class="string">&quot;pmax&quot;</span>                  <span class="number">28.42</span>      <span class="number">2.05</span>     <span class="number">24.40</span>     <span class="number">1.76</span></span><br><span class="line"><span class="string">&quot;aperm&quot;</span>                 <span class="number">21.96</span>      <span class="number">1.58</span>      <span class="number">0.00</span>     <span class="number">0.00</span></span><br><span class="line"><span class="string">&quot;aperm.default&quot;</span>         <span class="number">11.60</span>      <span class="number">0.84</span>     <span class="number">11.60</span>     <span class="number">0.84</span></span><br><span class="line"><span class="string">&quot;array&quot;</span>                 <span class="number">10.36</span>      <span class="number">0.75</span>     <span class="number">10.36</span>     <span class="number">0.75</span></span><br><span class="line"><span class="string">&quot;&lt;=&quot;</span>                     <span class="number">5.72</span>      <span class="number">0.41</span>      <span class="number">5.72</span>     <span class="number">0.41</span></span><br><span class="line"><span class="string">&quot;mostattributes&lt;-&quot;</span>       <span class="number">4.02</span>      <span class="number">0.29</span>      <span class="number">4.02</span>     <span class="number">0.29</span></span><br><span class="line"><span class="string">&quot;exp&quot;</span>                    <span class="number">3.60</span>      <span class="number">0.26</span>      <span class="number">3.60</span>     <span class="number">0.26</span></span><br><span class="line"><span class="string">&quot;unname&quot;</span>                 <span class="number">1.46</span>      <span class="number">0.11</span>      <span class="number">0.18</span>     <span class="number">0.01</span></span><br><span class="line"><span class="string">&quot;is.data.frame&quot;</span>          <span class="number">1.28</span>      <span class="number">0.09</span>      <span class="number">1.28</span>     <span class="number">0.09</span></span><br><span class="line"><span class="string">&quot;data.matrix&quot;</span>            <span class="number">1.28</span>      <span class="number">0.09</span>      <span class="number">0.00</span>     <span class="number">0.00</span></span><br><span class="line"><span class="string">&quot;colSums&quot;</span>                <span class="number">0.86</span>      <span class="number">0.06</span>      <span class="number">0.86</span>     <span class="number">0.06</span></span><br><span class="line"><span class="string">&quot;/&quot;</span>                      <span class="number">0.52</span>      <span class="number">0.04</span>      <span class="number">0.52</span>     <span class="number">0.04</span></span><br></pre></td></tr></table></figure>
+<h2 id="Parallel-Acceleration"><a href="#Parallel-Acceleration" class="headerlink" title="Parallel Acceleration"></a>Parallel Acceleration</h2><p>From above analysis,  the matrix multiplication (“%*%”) accounts for about 90% computation time in the training stage of the neural network. Thus, the key of DNN acceleration is to speed up matrix multiplication.  Fortunately, there are already several parallel libraries for matrix multiplication and we can deploy it to R easily.  In this post, I will introduce three basic linear algebra subprograms (<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Basic_Linear_Algebra_Subprograms">BLAS</a>) libraries, <a target="_blank" rel="noopener" href="http://www.openblas.net/">openBLAS</a>, <a target="_blank" rel="noopener" href="https://software.intel.com/en-us/intel-mkl">Intel MKL</a>, and <a target="_blank" rel="noopener" href="https://developer.nvidia.com/cublas">cuBLAS</a>. (In another <a target="_blank" rel="noopener" href="http://www.parallelr.com/r-hpac-benchmark-analysis/">blog</a>, moreover, we show their performance on modern hardware architectures and instructions of installation). The former two are multithread accelerated libraries which need to be built with R together (instructions in <a target="_blank" rel="noopener" href="http://www.r-bloggers.com/compile-r-and-openblas-from-source-guide/">here</a> and <a target="_blank" rel="noopener" href="https://software.intel.com/en-us/articles/using-intel-mkl-with-r">here</a>). On the other hand, it is indeed easy to apply NVIDIA cuBLAS library in R on Linux system by  the drop-on wrap, <a target="_blank" rel="noopener" href="http://docs.nvidia.com/cuda/nvblas/">nvBLAS</a>, which can be preloaded into R in order to hijack original Rblas.so. By this way, we can leverage NVIDIA GPU’s power into R with zero programming efforts :) The below picture shows the architecture of R with BLAS libraries. Typically, R will call their own BLAS, Rblas.so,on Linux system which handles all kinds of linear algebra functions (<a target="_blank" rel="noopener" href="http://www.netlib.org/blas/#_blas_routines">here</a>), but it is a single thread implementation. The trick to speed up the linear algebra calculations is to update the R standard BLAS to modern multithread libraries. For R developers, there is almost a ‘free lunch’  without rewriting their codes for parallel accelerations. <a href="/uploads/2016/02/R_BLAS.png"><img src="/uploads/2016/02/R_BLAS-300x144.png" alt="R_BLAS"></a> As below code shown, we tested prebuilt R  with openBLAS,  Intel MKL and  nvBLAS  for 2-layers neural network of 32, 64 and 128 neurons.From the below bar chart, the runtime of R DNN are dramatically decreased and it is nearly <strong>2X</strong> faster than H2O and <strong>9X</strong> speedup (from 2816 to 365 for 128 hidden neurons network) than original R code!</p>
+<blockquote>
+<p># you must create a configuration file nvBLAS.conf in the current directory, example in <a target="_blank" rel="noopener" href="http://docs.nvidia.com/cuda/nvblas/#configuration_example">here</a>. &gt;LD_PRELOAD=libnvblas.so /home/patricz/tools/R-3.2.0/bin/bin/R CMD <a target="_blank" rel="noopener" href="http://inside-r.org/packages/cran/batch">BATCH</a> MNIST_DNN.R</p>
+</blockquote>
+<p><a href="/uploads/2016/02/rdnn_gemm.png"><img src="/uploads/2016/02/rdnn_gemm.png" alt="rdnn_mnist_blas_gemm"></a></p>
+<blockquote>
+<p>Note: Testing hardware: Ivy Bridge E5-2690 v2 @ 3.00GHz, dual socket 10-core (total 20 cores), 128G RAM;   NVIDIA GPU K40m;  Software:  CUDA 7.5,  OpenBLAS 0.2.8,  Intel MKL 11.1</p>
+</blockquote>
+<h2 id="Optimization"><a href="#Optimization" class="headerlink" title="Optimization"></a>Optimization</h2><p>Till now, it seems everything is great and we gain lots of performance increments from BLAS libraries under multicores CPU and NVIDIA GPU system. <strong>But can we do a little more for performance optimizations?</strong> Let’s look into the profiling again and probe the top performance limiters. The below table shows the breakdown of R DNN code under acceleration by nvBLAS where the GEMM performance is 10X faster ( from original 1250 to 114 seconds ).  But the next two top time-consuming functions, “sweep()” and “t()”, account for 27% (<em>self.pct</em>) runtime.Therefore, it makes sense to do further optimization for them.</p>
+<blockquote>
+<p><strong>A question for readers:</strong> <strong>The total time of ‘sweep’ is 87.28 but the self-time is only 1.8, so what are the real computation parts and is it a reasonable choose to optimize it?</strong></p>
+</blockquote>
+<p><a href="/uploads/2016/02/runtime.breakdown.nvblas.png"><img src="/uploads/2016/02/runtime.breakdown.nvblas.png" alt="DNN.runtime.breakdown.nvblas"></a> From the source code, there are several function calls of t()  to transfer matrix before multiplication; however, R has already provided the inner function `crossprod` and `tcrossprod` for this kind of operations.</p>
+<figure class="highlight r"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># original:  t() with matrix multiplication</span></span><br><span class="line">dW2     &lt;- t(hidden.layer) %*% dscores </span><br><span class="line">dhidden &lt;- dscores %*% t(W2)</span><br><span class="line"></span><br><span class="line"><span class="comment"># Opt1: use builtin function</span></span><br><span class="line">dW2     &lt;- crossprod(hidden.layer, dscores)</span><br><span class="line">dhidden &lt;- tcrossprod(dscores, W2)</span><br></pre></td></tr></table></figure>
+<p>Secondly, the `sweep()` is performed to add the matrix with bias. Alternatively, we can combine weight and bias together and then use matrix multiplications, as below code shown. But the backside is that we have to create the new matrix for combinations of matrix and bias which increases memory pressure.</p>
+<figure class="highlight r"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Opt2: combine data and add 1 column for bias</span></span><br><span class="line"><span class="comment">#  extra matrix for combinations</span></span><br><span class="line">X1   &lt;- cbind(X, <span class="built_in">rep</span>(<span class="number">1</span>, nrow(X)))</span><br><span class="line">W1b1 &lt;- rbind(W1, b1)</span><br><span class="line">W2b2 &lt;- rbind(W2, b2)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># Opt2: remove `sweep` </span></span><br><span class="line"><span class="comment">#hidden.layer &lt;- sweep(X %*% W1 ,2, b1, &#x27;+&#x27;)</span></span><br><span class="line">hidden.layer &lt;- X1 %*% W1b1</span><br><span class="line"></span><br><span class="line"><span class="comment">#score &lt;- sweep(hidden.layer %*% W2, 2, b2, &#x27;+&#x27;)</span></span><br><span class="line">hidden.layer1 &lt;- cbind(hidden.layer, <span class="built_in">rep</span>(<span class="number">1</span>,nrow(hidden.layer)))</span><br><span class="line">score &lt;- hidden.layer1 %*% W2b2</span><br></pre></td></tr></table></figure>
+<p><a href="/uploads/2016/03/opt2.png"><img src="/uploads/2016/03/opt2.png" alt="bias optimization"></a> Now, we profile and compare the results again with below table. We save the computation time of ‘t.default’ and ‘aperm.default’ after removing ‘t()’ and ‘sweep()’ functions. Totally, the performance is <strong>DOUBLE</strong> again! <a href="/uploads/2016/02/DNN.Optimization.png"><img src="/uploads/2016/02/DNN.Optimization.png" alt="DNN.Optimization"></a></p>
+<blockquote>
+<p><strong>Another question:</strong> <strong>What is your opinion about the next step of optimizations? Any good idea and tell me your numbers  :)</strong></p>
+</blockquote>
+<p> </p>
+<h2 id="Summary"><a href="#Summary" class="headerlink" title="Summary"></a>Summary</h2><p>In this post, we have introduced the coarse granularity parallelism skill to accelerate R code by BLAS libraries on multicores CPU and NVIDIA GPU architectures. Till now, we have got <strong>+10X</strong> speedup under NVIDIA GPU and <strong>2X</strong> faster than 20-threads H2O packages for a relatively small network; however, there are still lots of space to improve, take a try. <a href="/uploads/2016/02/RDNN_nvBLAS_runtime.png"><img src="/uploads/2016/02/RDNN_nvBLAS_runtime.png" alt="RDNN_nvBLAS_runtime"></a> And finally we train MNIST dataset with a 2 layer neural network of 300 hidden unit on Tesla K40m GPU, and we reach 94.7% accuracy (5.3% error rate)  in an hour while <a target="_blank" rel="noopener" href="http://yann.lecun.com/exdb/mnist/">Yann</a> got 4.7% error rate with smaller learning rate ( lr=0.001)  which will cost longer training time but more accurate.   <a href="/uploads/2016/03/MNIST.png"><img src="/uploads/2016/03/MNIST.png" alt="neural network training results"></a> <strong>In the next <a target="_blank" rel="noopener" href="http://www.parallelr.com/r-dnn-cuda-multigpu/">blog post</a>, I will continue deep learning topic and focus on CUDA integration and multiple GPUs accelerations.</strong></p>
+<hr>
+<p>Notes: 1. The entire source code of this post in <a target="_blank" rel="noopener" href="https://github.com/PatricZhao/ParallelR">here</a> 2. The PDF version of this post in <a target="_blank" rel="noopener" href="http://www.parallelr.com/materials/3_ParDNN/3_.DNN_Parallel_Acceleration.pdf">here</a> 3. Pretty R syntax in this blog is <a target="_blank" rel="noopener" href="http://www.inside-r.org/pretty-r" title="Created by Pretty R at inside-R.org">Created by inside-R .org</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/oneXPU/tags/multicores/" rel="tag"># multicores</a>
+              <a href="/oneXPU/tags/rstats/" rel="tag"># rstats</a>
+              <a href="/oneXPU/tags/parallel-computing/" rel="tag"># parallel computing</a>
+              <a href="/oneXPU/tags/performance-optimization/" rel="tag"># performance optimization</a>
+              <a href="/oneXPU/tags/R/" rel="tag"># R</a>
+              <a href="/oneXPU/tags/deep-learning/" rel="tag"># deep learning</a>
+              <a href="/oneXPU/tags/H2O/" rel="tag"># H2O</a>
+              <a href="/oneXPU/tags/profiling/" rel="tag"># profiling</a>
+              <a href="/oneXPU/tags/classification/" rel="tag"># classification</a>
+              <a href="/oneXPU/tags/cuBLAS/" rel="tag"># cuBLAS</a>
+              <a href="/oneXPU/tags/dnn/" rel="tag"># dnn</a>
+              <a href="/oneXPU/tags/GPU/" rel="tag"># GPU</a>
+              <a href="/oneXPU/tags/high-performance/" rel="tag"># high performance</a>
+              <a href="/oneXPU/tags/MKL/" rel="tag"># MKL</a>
+              <a href="/oneXPU/tags/MNIST/" rel="tag"># MNIST</a>
+              <a href="/oneXPU/tags/multithreads/" rel="tag"># multithreads</a>
+              <a href="/oneXPU/tags/openblas/" rel="tag"># openblas</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/oneXPU/2016/02/13/r-deep-neural-network-from-scratch/" rel="prev" title="R for Deep Learning (I):  Build Fully Connected Neural Network from Scratch">
+      <i class="fa fa-chevron-left"></i> R for Deep Learning (I):  Build Fully Connected Neural Network from Scratch
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/oneXPU/2016/04/15/r-hpac-benchmark-analysis/" rel="next" title="R benchmark for High-Performance Analytics and Computing (I):Accelerators">
+      R benchmark for High-Performance Analytics and Computing (I):Accelerators <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Performance-Profiling"><span class="nav-number">1.</span> <span class="nav-text">Performance Profiling</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Parallel-Acceleration"><span class="nav-number">2.</span> <span class="nav-text">Parallel Acceleration</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Optimization"><span class="nav-number">3.</span> <span class="nav-text">Optimization</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Summary"><span class="nav-number">4.</span> <span class="nav-text">Summary</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Patric Zhao</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/oneXPU/archives/">
+        
+          <span class="site-state-item-count">10</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">20</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">56</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Patric Zhao</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/oneXPU/lib/anime.min.js"></script>
+  <script src="/oneXPU/lib/velocity/velocity.min.js"></script>
+  <script src="/oneXPU/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/oneXPU/js/utils.js"></script>
+
+<script src="/oneXPU/js/motion.js"></script>
+
+
+<script src="/oneXPU/js/schemes/muse.js"></script>
+
+
+<script src="/oneXPU/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

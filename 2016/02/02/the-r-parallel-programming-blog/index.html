@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/oneXPU/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/oneXPU/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/oneXPU/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/oneXPU/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/oneXPU/css/main.css">
+
+
+<link rel="stylesheet" href="/oneXPU/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"jitmatrix.github.io","root":"/oneXPU/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="DISCLAIMERThis is a personal weblog. The opinions expressed here represent my own and not those of my employer. Further, the opinions expressed by the ParallelR Bloggers and those providing comments">
+<meta property="og:type" content="article">
+<meta property="og:title" content="The R Parallel Programming Blog">
+<meta property="og:url" content="https://jitmatrix.github.io/oneXPU/2016/02/02/the-r-parallel-programming-blog/index.html">
+<meta property="og:site_name" content="oneXPU">
+<meta property="og:description" content="DISCLAIMERThis is a personal weblog. The opinions expressed here represent my own and not those of my employer. Further, the opinions expressed by the ParallelR Bloggers and those providing comments">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://jitmatrix.github.io/uploads/2016/02/PengZhao@ParallelR.png">
+<meta property="article:published_time" content="2016-02-02T22:53:13.000Z">
+<meta property="article:modified_time" content="2020-12-19T09:10:38.825Z">
+<meta property="article:author" content="Patric Zhao">
+<meta property="article:tag" content="rstats">
+<meta property="article:tag" content="parallel computing">
+<meta property="article:tag" content="performance optimization">
+<meta property="article:tag" content="R">
+<meta property="article:tag" content="machine learing">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://jitmatrix.github.io/uploads/2016/02/PengZhao@ParallelR.png">
+
+<link rel="canonical" href="https://jitmatrix.github.io/oneXPU/2016/02/02/the-r-parallel-programming-blog/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>The R Parallel Programming Blog | oneXPU</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/oneXPU/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">oneXPU</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Diving into Parallel Technology</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/oneXPU/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/oneXPU/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://jitmatrix.github.io/oneXPU/2016/02/02/the-r-parallel-programming-blog/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/oneXPU/images/avatar.gif">
+      <meta itemprop="name" content="Patric Zhao">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="oneXPU">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          The R Parallel Programming Blog
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2016-02-02 22:53:13" itemprop="dateCreated datePublished" datetime="2016-02-02T22:53:13+00:00">2016-02-02</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2020-12-19 09:10:38" itemprop="dateModified" datetime="2020-12-19T09:10:38+00:00">2020-12-19</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/oneXPU/categories/Accelerators/" itemprop="url" rel="index"><span itemprop="name">Accelerators</span></a>
+                </span>
+                  , 
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/oneXPU/categories/Accelerators/General/" itemprop="url" rel="index"><span itemprop="name">General</span></a>
+                </span>
+                  , 
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/oneXPU/categories/Accelerators/General/MPI/" itemprop="url" rel="index"><span itemprop="name">MPI</span></a>
+                </span>
+                  , 
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/oneXPU/categories/Accelerators/General/MPI/MultiCores/" itemprop="url" rel="index"><span itemprop="name">MultiCores</span></a>
+                </span>
+                  , 
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/oneXPU/categories/Accelerators/General/MPI/MultiCores/Performance-Optimizaiton/" itemprop="url" rel="index"><span itemprop="name">Performance Optimizaiton</span></a>
+                </span>
+                  , 
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/oneXPU/categories/Accelerators/General/MPI/MultiCores/Performance-Optimizaiton/Vectorization/" itemprop="url" rel="index"><span itemprop="name">Vectorization</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <hr>
+<h2 id="DISCLAIMER"><a href="#DISCLAIMER" class="headerlink" title="DISCLAIMER"></a>DISCLAIMER</h2><p><em>This is a personal weblog. The opinions expressed here represent my own and not those of my employer. <strong>Further,</strong> the opinions expressed by the ParallelR Bloggers and those providing comments are theirs alone and do not reflect the opinions of  <a target="_blank" rel="noopener" href="http://parallelr.com/">ParallelR</a>.</em></p>
+<hr>
+<p>Today, <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Parallel_computing">parallel computing</a> truly is a mainstream technology. But, <a target="_blank" rel="noopener" href="http://www.r-project.org/">stock R</a> is still a single-thread and main memory (RAM) limited software, which really restricts its usage and efficiency against the challenges from very complex model architectures, dynamically configurable analytics models and big data input with billions of parameters and samples.</p>
+<p>Therefore, <a target="_blank" rel="noopener" href="http://www.parallelr.com/">ParallelR</a> dedicated on accelerate R by parallel technologies, and our blog will deliver massive parallel technologies and programming tips with real cases in Machine Learning, Data Analysis, Finance fields. And we will cover rich of topics from data vectorization, usages of parallel packages, (<a target="_blank" rel="noopener" href="https://cran.r-project.org/web/packages/snow/index.html">snow</a>, <a target="_blank" rel="noopener" href="https://cran.r-project.org/web/packages/doParallel/index.html">doparallel</a>, <a target="_blank" rel="noopener" href="https://cran.r-project.org/web/packages/Rmpi/index.html">Rmpi</a>, <a target="_blank" rel="noopener" href="https://spark.apache.org/docs/1.5.2/sparkr.html">SparkR</a>) , to parallel algorithm design and implementation by <a target="_blank" rel="noopener" href="http://www.openmp.org/">OpenMP</a>, <a target="_blank" rel="noopener" href="http://www.openacc.org/">OpenACC</a>, <a target="_blank" rel="noopener" href="http://developer.nvidia.com/gpu-accelerated-libraries">CPU/GPU accelerated libraries</a>, <a target="_blank" rel="noopener" href="http://www.nvidia.com/object/cuda_home_new.html">CUDA C/C++</a> and <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/POSIX_Threads">Pthread</a> in R.</p>
+<p>At <a target="_blank" rel="noopener" href="http://www.parallelr.com/blog/">ParallelR Blog</a> you will find useful information about productive, high-performance programming techniques based on commercialized computer architecture, ranging from multicores CPU, GPU, <a target="_blank" rel="noopener" href="http://www.intel.com/content/www/us/en/processors/xeon/xeon-phi-detail.html">Intel Xeon Phi</a>, <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Field-programmable_gate_array">FPGA</a> to HPC Cluster. As well, you will learn how you can use your existing skills in R in new ways, represented your R codes with structured computational models.</p>
+<p>ParallelR Blog is created by Peng Zhao. Peng have rich experience in heterogeneous and parallel computing areas including multi-cores, multi-nodes and accelerators (GPGPU, Intel Xeon Phi) for parallel algorithm design, implementation, debugging and optimizations.</p>
+<p> <br>This is Peng. Handsome, Right?<br><a href="/uploads/2016/02/PengZhao@ParallelR.png"><img src="/uploads/2016/02/PengZhao@ParallelR.png"></a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/oneXPU/tags/rstats/" rel="tag"># rstats</a>
+              <a href="/oneXPU/tags/parallel-computing/" rel="tag"># parallel computing</a>
+              <a href="/oneXPU/tags/performance-optimization/" rel="tag"># performance optimization</a>
+              <a href="/oneXPU/tags/R/" rel="tag"># R</a>
+              <a href="/oneXPU/tags/machine-learing/" rel="tag"># machine learing</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/oneXPU/2016/02/13/r-deep-neural-network-from-scratch/" rel="next" title="R for Deep Learning (I):  Build Fully Connected Neural Network from Scratch">
+      R for Deep Learning (I):  Build Fully Connected Neural Network from Scratch <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#DISCLAIMER"><span class="nav-number">1.</span> <span class="nav-text">DISCLAIMER</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Patric Zhao</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/oneXPU/archives/">
+        
+          <span class="site-state-item-count">10</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">20</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">56</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Patric Zhao</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/oneXPU/lib/anime.min.js"></script>
+  <script src="/oneXPU/lib/velocity/velocity.min.js"></script>
+  <script src="/oneXPU/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/oneXPU/js/utils.js"></script>
+
+<script src="/oneXPU/js/motion.js"></script>
+
+
+<script src="/oneXPU/js/schemes/muse.js"></script>
+
+
+<script src="/oneXPU/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

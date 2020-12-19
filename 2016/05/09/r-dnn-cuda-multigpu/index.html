@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/oneXPU/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/oneXPU/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/oneXPU/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/oneXPU/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/oneXPU/css/main.css">
+
+
+<link rel="stylesheet" href="/oneXPU/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"jitmatrix.github.io","root":"/oneXPU/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="Notes: 1. The entire source code of this post in here 2. The PDF version of this post in here  In previous two blogs (here and here), we illustrated several skills to build and optimize artificial neu">
+<meta property="og:type" content="article">
+<meta property="og:title" content="R for Deep Learning (III): CUDA and MultiGPUs Acceleration">
+<meta property="og:url" content="https://jitmatrix.github.io/oneXPU/2016/05/09/r-dnn-cuda-multigpu/index.html">
+<meta property="og:site_name" content="oneXPU">
+<meta property="og:description" content="Notes: 1. The entire source code of this post in here 2. The PDF version of this post in here  In previous two blogs (here and here), we illustrated several skills to build and optimize artificial neu">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://jitmatrix.github.io/uploads/2016/03/orig-1.png">
+<meta property="og:image" content="https://jitmatrix.github.io/uploads/2016/03/C_Call.png">
+<meta property="og:image" content="https://jitmatrix.github.io/uploads/2016/03/cuda-300x291.png">
+<meta property="og:image" content="https://jitmatrix.github.io/uploads/2016/03/mclappy-1024x555.png">
+<meta property="og:image" content="https://jitmatrix.github.io/uploads/2016/03/MultiGPU_Runtime.png">
+<meta property="og:image" content="https://jitmatrix.github.io/uploads/2016/03/MultiGPU_Speedup.png">
+<meta property="article:published_time" content="2016-05-09T00:00:08.000Z">
+<meta property="article:modified_time" content="2020-12-19T09:10:38.825Z">
+<meta property="article:author" content="Patric Zhao">
+<meta property="article:tag" content="multicores">
+<meta property="article:tag" content="rstats">
+<meta property="article:tag" content="parallel computing">
+<meta property="article:tag" content="R">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="deep learning">
+<meta property="article:tag" content="H2O">
+<meta property="article:tag" content="machine learning">
+<meta property="article:tag" content="mutltiGPU">
+<meta property="article:tag" content="profiling">
+<meta property="article:tag" content="snow">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://jitmatrix.github.io/uploads/2016/03/orig-1.png">
+
+<link rel="canonical" href="https://jitmatrix.github.io/oneXPU/2016/05/09/r-dnn-cuda-multigpu/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>R for Deep Learning (III): CUDA and MultiGPUs Acceleration | oneXPU</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/oneXPU/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">oneXPU</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Diving into Parallel Technology</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/oneXPU/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/oneXPU/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://jitmatrix.github.io/oneXPU/2016/05/09/r-dnn-cuda-multigpu/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/oneXPU/images/avatar.gif">
+      <meta itemprop="name" content="Patric Zhao">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="oneXPU">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          R for Deep Learning (III): CUDA and MultiGPUs Acceleration
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2016-05-09 00:00:08" itemprop="dateCreated datePublished" datetime="2016-05-09T00:00:08+00:00">2016-05-09</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2020-12-19 09:10:38" itemprop="dateModified" datetime="2020-12-19T09:10:38+00:00">2020-12-19</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/oneXPU/categories/Accelerators/" itemprop="url" rel="index"><span itemprop="name">Accelerators</span></a>
+                </span>
+                  , 
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/oneXPU/categories/Accelerators/GPGPU/" itemprop="url" rel="index"><span itemprop="name">GPGPU</span></a>
+                </span>
+                  , 
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/oneXPU/categories/Accelerators/GPGPU/Performance-Optimizaiton/" itemprop="url" rel="index"><span itemprop="name">Performance Optimizaiton</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>Notes: 1. The entire source code of this post in <a target="_blank" rel="noopener" href="https://github.com/PatricZhao/ParallelR/blob/master/ParDNN">here</a> 2. The PDF version of this post in <a target="_blank" rel="noopener" href="http://www.parallelr.com/materials/4_CUDA/CUDA_DNN.pdf">here</a></p>
+<hr>
+<p>In previous two blogs (<a target="_blank" rel="noopener" href="http://www.parallelr.com/r-deep-neural-network-from-scratch/">here</a> and <a target="_blank" rel="noopener" href="http://www.parallelr.com/r-dnn-parallel-acceleration/">here</a>), we illustrated several skills to build and optimize artificial neural network (ANN) with R and speed up by parallel BLAS libraries in modern hardware platform including Intel Xeon and NVIDIA GPU. Nowadays, multiple GPU accelerations are crucial for learning huge networks, one example, as Microsoft won ImageNet competition with huge network up to 1000 layers in 2015, [<a target="_blank" rel="noopener" href="http://www.i-programmer.info/news/105-artificial-intelligence/9266-microsoft-wins-imagenet-using-extremely-deep-neural-networks.html">here</a> and <a target="_blank" rel="noopener" href="http://image-net.org/challenges/LSVRC/2015/results">here</a>]. In this blog, I will focus on applying CUDA implementation into our neural network offloading the computationally intensive parts into GPU and then we can easily extend CUDA implementation from single GPU to multiple GPUs under ‘<a target="_blank" rel="noopener" href="https://stat.ethz.ch/R-manual/R-devel/library/parallel/doc/parallel.pdf">parallel</a>’ packages of R.  P.S: If you want to go through all of these contents quickly, check out my presentation in GTC16 in <a target="_blank" rel="noopener" href="http://www.parallelr.com/GTC16/GTC16_PatricZhao_Unlock_DNN_Perf_CUDA.pdf">here</a>.  </p>
+<h2 id="CUDA-INTEGRATION"><a href="#CUDA-INTEGRATION" class="headerlink" title="CUDA INTEGRATION"></a>CUDA INTEGRATION</h2><p>Now, we begin to introduce our <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Ninja">ninja</a> skills : CUDA After  combined DNN code with CUDA BLAS library and several optimizations, we get the follow results in the table <a target="_blank" rel="noopener" href="http://www.parallelr.com/r-dnn-parallel-acceleration/">in the previous blog</a> and leave one question for readers:</p>
+<p><strong>What is your opinion about the next step of optimizations?</strong></p>
+<p><a href="/uploads/2016/03/orig.png"></a><a href="/uploads/2016/03/orig-1.png"><img src="/uploads/2016/03/orig-1.png" alt="R_ANN"></a> It’s obvious that the function ‘pmax’ accounts for lots of runtimes (<strong>31.58</strong> secs) following ‘%*%’ (<strong>53.72</strong> secs) since ‘pmax’ is implemented by R and it will be very slow when the data size increase. (btw, you can try to increase the number of neurons in hidden layer to 1024 and profiling the code again to figure out the ratio of ‘pmax’ in the whole computation).  Reviewing the functionality of ‘pmax’ in our DNN case, we implement the ReLU function and get the maximum value among input value and 0 for every neuron in hidden layer. Furthermore, because our algorithm is vectorized by matrices for high performance,  the input of ‘pmax’ is a two-dimensional matrix and we can parallel maximum function into each element easily. So, let’s start to parallel the ReLu function by CUDA. I will skip the details of CUDA programming in this blog, you can refer programming guide in <a target="_blank" rel="noopener" href="http://docs.nvidia.com/cuda/cuda-c-programming-guide/#axzz47CbpOe1j">here</a>. First, we can write the CUDA code to compare the input value with ZERO. Despite it  is a very naïve implementation, it is still very fast than original R code. Throughout this kernel code can be executed in NVIDIA GPU, it is written by CUDA C rather than R. Next, we need to call it from R environment. In general, we have to write wrapper functions to bridge R,  C/C++, and CUDA. <a target="_blank" rel="noopener" href="http://heather.cs.ucdavis.edu/matloff.html">Prof. Matloff</a> and I have written the blog introduced linking R with CUDA step by step regarding with .Call() and .C() function with two-level wrappers from R to C/C++ and C/C++ to CUDA (<a target="_blank" rel="noopener" href="https://devblogs.nvidia.com/parallelforall/accelerate-r-applications-cuda/">here</a>  and <a target="_blank" rel="noopener" href="http://blog.revolutionanalytics.com/2015/01/parallel-programming-with-gpus-and-r.html">here</a>).  A brief summary about the major difference of .C() and .Call() is shown in below table. <a href="/uploads/2016/03/C_Call.png"><img src="/uploads/2016/03/C_Call.png" alt="R_Cal_ function"></a></p>
+<p>From the performance view, the .Call() function is selected since little overhead between R and C/C++ by avoiding explicit copying data from R to C/C++ and then from C/C++ back to R. In below code, we access data by a pointer and heavily use R internal structures with very efficient way.</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// difinition for R</span></span><br><span class="line"><span class="keyword">extern</span> <span class="string">&quot;C&quot;</span> &#123;</span><br><span class="line">   <span class="function">SEXP <span class="title">pmax_cuda</span><span class="params">(SEXP A, SEXP threshold, SEXP devID)</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="comment">//CUDA: simple implementation of pmax</span></span><br><span class="line"><span class="function">__global__ <span class="keyword">void</span> <span class="title">pmax_kernel</span><span class="params">(<span class="keyword">double</span> *A, </span></span></span><br><span class="line"><span class="function"><span class="params">                            <span class="keyword">const</span> <span class="keyword">int</span> M, </span></span></span><br><span class="line"><span class="function"><span class="params">                            <span class="keyword">const</span> <span class="keyword">int</span> N, </span></span></span><br><span class="line"><span class="function"><span class="params">                            <span class="keyword">const</span> <span class="keyword">double</span> threshold)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">int</span> tid = blockIdx.x * blockDim.x + threadIdx.x;</span><br><span class="line">  <span class="keyword">if</span>(tid &amp;lt; M*N) &#123; A[tid] = (A[tid]&amp;gt;threshold)?A[tid]:<span class="number">0</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="comment">// Wrapper code between R and CUDA </span></span><br><span class="line"><span class="function">SEXP <span class="title">pmax_cuda</span><span class="params">(SEXP A, SEXP threshold, SEXP devID)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">   <span class="comment">// data structure for GPU</span></span><br><span class="line">   <span class="keyword">double</span> *A_host = <span class="literal">NULL</span>;</span><br><span class="line">   <span class="keyword">double</span> *A_d = <span class="literal">NULL</span>;</span><br><span class="line">   <span class="keyword">double</span> gw = <span class="number">0</span>;</span><br><span class="line">   <span class="keyword">int</span> mm = <span class="number">0</span>, nn = <span class="number">0</span>;</span><br><span class="line">   <span class="keyword">int</span> gpuID = <span class="number">0</span>;</span><br><span class="line">  </span><br><span class="line">   <span class="comment">// data transfer from R to C by pointers</span></span><br><span class="line">   A_host = REAL(A);</span><br><span class="line">   SEXP Rdim = getAttrib(A, R_DimSymbol);</span><br><span class="line">   mm = INTEGER(Rdim)[<span class="number">0</span>];</span><br><span class="line">   nn = INTEGER(Rdim)[<span class="number">1</span>];</span><br><span class="line">   gw = REAL(threshold)[<span class="number">0</span>];</span><br><span class="line">   gpuID = INTEGER(devID)[<span class="number">0</span>];</span><br><span class="line"> </span><br><span class="line">   <span class="comment">// for multiple GPU case </span></span><br><span class="line">   cudaSetDevice(gpuID);</span><br><span class="line">  </span><br><span class="line">   <span class="comment">// return value, allocated in C and can be used in R directly</span></span><br><span class="line">   SEXP Rval;</span><br><span class="line">   PROTECT(Rval = allocVector(REALSXP, mm*nn));</span><br><span class="line"> </span><br><span class="line">   <span class="comment">// GPU memory allocation</span></span><br><span class="line">   cudaMalloc(&amp;amp;A_d, mm*nn*<span class="keyword">sizeof</span>(<span class="keyword">double</span>));</span><br><span class="line">   <span class="keyword">if</span>(<span class="literal">NULL</span> == A_d) &#123;</span><br><span class="line">     <span class="built_in">printf</span>(<span class="string">&quot;\nNo RAM space in GPU!\n&quot;</span>);</span><br><span class="line">     UNPROTECT(<span class="number">1</span>);</span><br><span class="line">     <span class="keyword">return</span> R_NilValue;</span><br><span class="line">   &#125;</span><br><span class="line">  </span><br><span class="line">   <span class="comment">// memory copy from CPU to GPU</span></span><br><span class="line">   cudaMemcpy(A_d, A_host, mm*nn*<span class="keyword">sizeof</span>(<span class="keyword">double</span>), cudaMemcpyHostToDevice); </span><br><span class="line">  </span><br><span class="line">   <span class="comment">// CUDA: pmax, really computation parts</span></span><br><span class="line">   pmax_kernel&amp;lt;&amp;lt;&amp;lt;(mm*nn<span class="number">-1</span>)/<span class="number">512</span>+<span class="number">1</span>, <span class="number">512</span>&amp;gt;&amp;gt;&amp;gt;(A_d, mm, nn, gw);</span><br><span class="line">   cudaMemcpy(REAL(Rval), A_d, mm*nn*<span class="keyword">sizeof</span>(<span class="keyword">double</span>), cudaMemcpyDeviceToHost); </span><br><span class="line">   cudaDeviceSynchronize();</span><br><span class="line"> </span><br><span class="line">   <span class="comment">// Free unused memory of GPU</span></span><br><span class="line">   <span class="keyword">if</span>(A_d) &#123;cudaFree(A_d); A_d=<span class="literal">NULL</span>;&#125;</span><br><span class="line"> </span><br><span class="line">   UNPROTECT(<span class="number">1</span>);</span><br><span class="line">   <span class="keyword">return</span> Rval;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Next, compile the C/C++ and CUDA code together to a shared object file (.so) or dynamic link library (.dll) for loading in R.</p>
+<blockquote>
+<p>nvcc -O3 -arch=sm_35 -G -I…/CUDA-v7.5.18/include -I…/R-3.2.0/bin/lib64/R/include/ -L…/R/lib64/R/lib –shared -Xcompiler -fPIC -o cudaR.so cudaR.cu</p>
+</blockquote>
+<p>Finally, the CUDA version of ‘pmax’ can be called in R as simple as R builtin function with R’s wrapper, and,  for infrastructure engineer, writing a nice wrapper is still an important job :)</p>
+<figure class="highlight r"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># preload static object file</span></span><br><span class="line">dyn.load(<span class="string">&quot;cudaR.so&quot;</span>)</span><br><span class="line"> </span><br><span class="line"><span class="comment"># GPU version of pmax</span></span><br><span class="line">pmax.cuda &lt;- <span class="keyword">function</span>(A, threshold, devID=<span class="number">0L</span>)</span><br><span class="line">&#123;</span><br><span class="line">  rst &lt;- .Call(<span class="string">&quot;pmax_cuda&quot;</span>,</span><br><span class="line">                A,</span><br><span class="line">                threshold,</span><br><span class="line">                <span class="built_in">as.integer</span>(devID)</span><br><span class="line">	      )</span><br><span class="line">  <span class="built_in">dim</span>(rst) &lt;- <span class="built_in">dim</span>(A)</span><br><span class="line">  <span class="built_in">return</span>(rst)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Show our performance now!  By replacing ‘pmax’ with  new ‘pmax.cuda’,  the execution time of pmax reduces to <strong>6.7</strong> seconds from original 31.58 so it’s <strong>5X speedup</strong> and totally the <strong>1.2X speedup</strong> gains. <a href="/uploads/2016/03/cuda.png"><img src="/uploads/2016/03/cuda-300x291.png" alt="cuda pmax "></a>  </p>
+<h2 id="Scale-out-to-MultiGPU"><a href="#Scale-out-to-MultiGPU" class="headerlink" title="Scale out to MultiGPU"></a><strong>Scale out to MultiGPU</strong></h2><p>Parallel computing is not a novel concept in R community. Data scientist is familiar with parallel strategies both in speedup their model construction and inference. In fact, the requirement of parallel computing in R is even higher than C/C++.  The C/C++ implementations always focus on low-level instructions and optimizations such as memory locality, communication, computation efficiency and much more while R aims to fast, easy and portability from high-level programming. Popular R packages handle most of low-level details and R users only focus on dataset decomposition and functional programming. Specifically, in this blog, we will show you parallel training of DNN with ‘<a target="_blank" rel="noopener" href="https://stat.ethz.ch/R-manual/R-devel/library/parallel/doc/parallel.pdf">parallel</a>’ package and extend it to multiGPUs.</p>
+<h4 id="HOGWILD"><a href="#HOGWILD" class="headerlink" title="HOGWILD!"></a>HOGWILD!</h4><p><a target="_blank" rel="noopener" href="http://arxiv.org/pdf/1106.5730v2.pdf">HOGWILD!</a> is a data parallel model designed for stochastic gradient descent. It’s a lock-free approach with the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/MapReduce">MapReduce</a>-like parallel-processing framework and can be used in DNN training . Thus, the training processing is designed as below: 1.Launch N workers 2.Each worker updates local weights/bias based on parts (1/N) of data 3.Master collects and averages all weights/bias from each worker 4.Each worker updates its weights/bias from master</p>
+<h4 id="Parallel-in-R"><a href="#Parallel-in-R" class="headerlink" title="Parallel in R"></a>Parallel in R</h4><p>In R, this flow can be implemented by ‘multicores’ packages (currently, ‘parallel’ package includes both ‘multicores’ and ‘snow’ in CRAN). In below, flow chart is the standard workflow of ‘multicore’ packages with our DNN. ‘mclapply’ function creates two processors which shares memory by copy-on-write and each processor train the network by parts of data. After several steps, the master processor will do a reduce step to collect  weights from two child processors and average them.In next iteration, two children will use the new weights. <a href="/uploads/2016/03/mclappy.png"><img src="/uploads/2016/03/mclappy-1024x555.png" alt="mclappy with GPU"></a> Now, let’s see the details of how R code handles this data parallel model based on below real codes . 1. ‘mclapply’ creates N (devNum) workers based on ‘mc.cores’ and each worker will execute the same function, train.dnn.cublas, with different index (1:devNum); 2. the data is divided into N (devNum) parts and each worker will load their data simultaneously by their ID then the computation, even writing, can be ideally parallelized; 3. all workers exit when ‘mclapply’ is done and the results from every worker will be saved in a list (res).  Master continues to remain parts and then calculate the average of all weights and bias. 4. in the next loop, the ‘mclapply’ will use the averaged model (para.model) to train again.</p>
+<figure class="highlight r"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Parallel Training</span></span><br><span class="line">res &lt;- mclapply(<span class="number">1</span>:devNum, <span class="keyword">function</span>(id) &#123; train.dnn.cublas(x, y, </span><br><span class="line">                                         omodel=para.model,</span><br><span class="line">                                         taindata=traindata[N.start[id]:N.end[id],],</span><br><span class="line">                                         devType=“GPU”, devID=(id-<span class="number">1</span>), . . .) &#125;,</span><br><span class="line">                mc.cores=devNum, </span><br><span class="line">                mc.preschedule=<span class="literal">TRUE</span>)</span><br><span class="line"> </span><br><span class="line"><span class="comment"># Construct new model with parallel weights</span></span><br><span class="line">D &lt;- res[[<span class="number">1</span>]]$D</span><br><span class="line">H &lt;- res[[<span class="number">1</span>]]$H</span><br><span class="line">K &lt;- res[[<span class="number">1</span>]]$K</span><br><span class="line"><span class="keyword">for</span>(i <span class="keyword">in</span> <span class="number">2</span>:devNum) &#123;</span><br><span class="line">        res[[<span class="number">1</span>]]$W1 &lt;- res[[<span class="number">1</span>]]$W1 + res[[i]]$W1</span><br><span class="line">        res[[<span class="number">1</span>]]$W2 &lt;- res[[<span class="number">1</span>]]$W2 + res[[i]]$W2</span><br><span class="line">        res[[<span class="number">1</span>]]$b1 &lt;- res[[<span class="number">1</span>]]$b1 + res[[i]]$b1</span><br><span class="line">        res[[<span class="number">1</span>]]$b2 &lt;- res[[<span class="number">1</span>]]$b2 + res[[i]]$b2</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">para.model &lt;- <span class="built_in">list</span>( D = D,</span><br><span class="line">                    H = H,</span><br><span class="line">                    K = K,</span><br><span class="line">                    <span class="comment"># weights and bias</span></span><br><span class="line">                    W1= res[[<span class="number">1</span>]]$W1/devNum, </span><br><span class="line">                    b1= res[[<span class="number">1</span>]]$b1/devNum, </span><br><span class="line">                    W2= res[[<span class="number">1</span>]]$W2/devNum, </span><br><span class="line">                    b2= res[[<span class="number">1</span>]]$b2/devNum)</span><br></pre></td></tr></table></figure>
+<h4 id="Extent-to-MultiGPU"><a href="#Extent-to-MultiGPU" class="headerlink" title="Extent to MultiGPU"></a>Extent to MultiGPU</h4><p>Then scale to multiple GPUs, the workflow is almost as similar as CPU and only different is that each worker needs to set GPU ID explicitly and then run previous CUDA accelerated code. In other words, users still are able to access the same CUDA codes that they usually use (almost) without any change!  In our implementation, we adopt the strategy of a consistent one-to-one match between CPU worker with GPU by setting GPU index as below.</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// for multiple GPU case</span></span><br><span class="line">cudaSetDevice(gpuID);</span><br></pre></td></tr></table></figure>
+<h4 id="Performance-Showcase"><a href="#Performance-Showcase" class="headerlink" title="Performance Showcase"></a>Performance Showcase</h4><p>Finally, we analyzed the performance of CPU and GPU code. The line plot shows the strong scalability of native R code (1 hidden layer and 512 neurons). And compared with H2O, native R exhibits good scalability with the number of thread increase. Look at GPU parts, one thread with one GPU is faster than 20 threads CPU implementation (both native R and H2O). Next, look at GPU scalability in bar plot where <strong>5 times</strong> speedup under 6 GPUs are reached and our algorithm achieved <strong>160 times</strong> speedup compared with original R code. Testing on : CPU:  Ivy Bridge E5-2690 v2 @ 3.00GHz, dual socket 10-core, 128G RAM;  GPU: NVIDIA K40m,  12G RAM <a href="/uploads/2016/03/MultiGPU_Runtime.png"><img src="/uploads/2016/03/MultiGPU_Runtime.png" alt="MultiGPU_Runtime"></a></p>
+<p><a href="/uploads/2016/03/MultiGPU_Speedup.png"><img src="/uploads/2016/03/MultiGPU_Speedup.png" alt="MultiGPU_Speedup"></a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/oneXPU/tags/multicores/" rel="tag"># multicores</a>
+              <a href="/oneXPU/tags/rstats/" rel="tag"># rstats</a>
+              <a href="/oneXPU/tags/parallel-computing/" rel="tag"># parallel computing</a>
+              <a href="/oneXPU/tags/R/" rel="tag"># R</a>
+              <a href="/oneXPU/tags/CUDA/" rel="tag"># CUDA</a>
+              <a href="/oneXPU/tags/deep-learning/" rel="tag"># deep learning</a>
+              <a href="/oneXPU/tags/H2O/" rel="tag"># H2O</a>
+              <a href="/oneXPU/tags/machine-learning/" rel="tag"># machine learning</a>
+              <a href="/oneXPU/tags/mutltiGPU/" rel="tag"># mutltiGPU</a>
+              <a href="/oneXPU/tags/profiling/" rel="tag"># profiling</a>
+              <a href="/oneXPU/tags/snow/" rel="tag"># snow</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/oneXPU/2016/05/04/r-gpu-programming-for-all-with-gpur/" rel="prev" title="R - GPU Programming for All with 'gpuR'">
+      <i class="fa fa-chevron-left"></i> R - GPU Programming for All with 'gpuR'
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/oneXPU/2016/07/26/r-and-openmp-boosting-compiled-code-on-multi-core-cpu-s/" rel="next" title="R and openMP: boosting compiled code on multi-core cpu-s">
+      R and openMP: boosting compiled code on multi-core cpu-s <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#CUDA-INTEGRATION"><span class="nav-number">1.</span> <span class="nav-text">CUDA INTEGRATION</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Scale-out-to-MultiGPU"><span class="nav-number">2.</span> <span class="nav-text">Scale out to MultiGPU</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#HOGWILD"><span class="nav-number">2.0.1.</span> <span class="nav-text">HOGWILD!</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Parallel-in-R"><span class="nav-number">2.0.2.</span> <span class="nav-text">Parallel in R</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Extent-to-MultiGPU"><span class="nav-number">2.0.3.</span> <span class="nav-text">Extent to MultiGPU</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Performance-Showcase"><span class="nav-number">2.0.4.</span> <span class="nav-text">Performance Showcase</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Patric Zhao</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/oneXPU/archives/">
+        
+          <span class="site-state-item-count">10</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">20</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">56</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Patric Zhao</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/oneXPU/lib/anime.min.js"></script>
+  <script src="/oneXPU/lib/velocity/velocity.min.js"></script>
+  <script src="/oneXPU/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/oneXPU/js/utils.js"></script>
+
+<script src="/oneXPU/js/motion.js"></script>
+
+
+<script src="/oneXPU/js/schemes/muse.js"></script>
+
+
+<script src="/oneXPU/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
