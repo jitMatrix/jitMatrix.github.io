@@ -4,13 +4,13 @@
   <meta charset="utf-8">
   
   
-  <title>R with Parallel Computing from User Perspectives | Hexo</title>
+  <title>R with Parallel Computing from User Perspectives | oneXPU</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <meta name="description" content="This article is originally published in Capital of Statistic by Chinese [link] and I would like to thank He Tong for lots of great suggestions. All code in this post can be found on GitHub [link].  D">
 <meta property="og:type" content="article">
 <meta property="og:title" content="R with Parallel Computing from User Perspectives">
 <meta property="og:url" content="https://jitmatrix.github.io/oneXPU/2016/09/10/r-with-parallel-computing/index.html">
-<meta property="og:site_name" content="Hexo">
+<meta property="og:site_name" content="oneXPU">
 <meta property="og:description" content="This article is originally published in Capital of Statistic by Chinese [link] and I would like to thank He Tong for lots of great suggestions. All code in this post can be found on GitHub [link].  D">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="http://www.parallelr.com/wp-content/uploads/2016/09/sunway-taihulight.jpg">
@@ -22,8 +22,8 @@
 <meta property="og:image" content="http://www.parallelr.com/wp-content/uploads/2016/09/mapping-1.png">
 <meta property="og:image" content="http://www.parallelr.com/wp-content/uploads/2016/09/EP.png">
 <meta property="article:published_time" content="2016-09-10T09:10:31.000Z">
-<meta property="article:modified_time" content="2020-12-19T06:31:14.159Z">
-<meta property="article:author" content="John Doe">
+<meta property="article:modified_time" content="2020-12-19T06:37:18.634Z">
+<meta property="article:author" content="Patric Zhao">
 <meta property="article:tag" content="multicores">
 <meta property="article:tag" content="rstats">
 <meta property="article:tag" content="parallel computing">
@@ -40,7 +40,7 @@
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="http://www.parallelr.com/wp-content/uploads/2016/09/sunway-taihulight.jpg">
   
-    <link rel="alternate" href="/oneXPU/atom.xml" title="Hexo" type="application/atom+xml">
+    <link rel="alternate" href="/oneXPU/atom.xml" title="oneXPU" type="application/atom+xml">
   
   
     <link rel="shortcut icon" href="/oneXPU/favicon.png">
@@ -68,8 +68,12 @@
   <div id="header-outer" class="outer">
     <div id="header-title" class="inner">
       <h1 id="logo-wrap">
-        <a href="/oneXPU/" id="logo">Hexo</a>
+        <a href="/oneXPU/" id="logo">oneXPU</a>
       </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/oneXPU/" id="subtitle">Diving into Parallel Technology</a>
+        </h2>
       
     </div>
     <div id="header-inner" class="inner">
@@ -180,7 +184,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://jitmatrix.github.io/oneXPU/2016/09/10/r-with-parallel-computing/" data-id="ckivbq15i006c1jov62omersi" data-title="R with Parallel Computing from User Perspectives" class="article-share-link">Share</a>
+      <a data-url="https://jitmatrix.github.io/oneXPU/2016/09/10/r-with-parallel-computing/" data-id="ckivbxbj7006azroecz5cb1lz" data-title="R with Parallel Computing from User Perspectives" class="article-share-link">Share</a>
       
       
       
@@ -221,7 +225,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Categories</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/oneXPU/categories/Accelerators/">Accelerators</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/oneXPU/categories/Accelerators/GPGPU/">GPGPU</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/oneXPU/categories/Accelerators/GPGPU/MultiCores/">MultiCores</a></li><li class="category-list-item"><a class="category-list-link" href="/oneXPU/categories/Accelerators/GPGPU/Performance-Optimizaiton/">Performance Optimizaiton</a></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/oneXPU/categories/Accelerators/General/">General</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/oneXPU/categories/Accelerators/General/GPGPU/">GPGPU</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/oneXPU/categories/Accelerators/General/GPGPU/MultiCores/">MultiCores</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/oneXPU/categories/Accelerators/General/GPGPU/MultiCores/Performance-Optimizaiton/">Performance Optimizaiton</a></li></ul></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/oneXPU/categories/Accelerators/General/MPI/">MPI</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/oneXPU/categories/Accelerators/General/MPI/MultiCores/">MultiCores</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/oneXPU/categories/Accelerators/General/MPI/MultiCores/Performance-Optimizaiton/">Performance Optimizaiton</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/oneXPU/categories/Accelerators/General/MPI/MultiCores/Performance-Optimizaiton/Vectorization/">Vectorization</a></li></ul></li></ul></li></ul></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/oneXPU/categories/Accelerators/MultiCores/">MultiCores</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/oneXPU/categories/Accelerators/MultiCores/Performance-Optimizaiton/">Performance Optimizaiton</a></li><li class="category-list-item"><a class="category-list-link" href="/oneXPU/categories/Accelerators/MultiCores/Vectorization/">Vectorization</a></li></ul></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/oneXPU/categories/GPGPU/">GPGPU</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/oneXPU/categories/GPGPU/Intel-Xeon-Phi/">Intel Xeon Phi</a></li><li class="category-list-item"><a class="category-list-link" href="/oneXPU/categories/GPGPU/MultiCores/">MultiCores</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/oneXPU/categories/GPGPU/MultiCores/Performance-Optimizaiton/">Performance Optimizaiton</a></li></ul></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/oneXPU/categories/General/">General</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/oneXPU/categories/General/MultiCores/">MultiCores</a></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/oneXPU/categories/Uncategorized/">Uncategorized</a></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/oneXPU/categories/Accelerators/">Accelerators</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/oneXPU/categories/Accelerators/GPGPU/">GPGPU</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/oneXPU/categories/Accelerators/GPGPU/MultiCores/">MultiCores</a></li><li class="category-list-item"><a class="category-list-link" href="/oneXPU/categories/Accelerators/GPGPU/Performance-Optimizaiton/">Performance Optimizaiton</a></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/oneXPU/categories/Accelerators/General/">General</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/oneXPU/categories/Accelerators/General/GPGPU/">GPGPU</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/oneXPU/categories/Accelerators/General/GPGPU/MultiCores/">MultiCores</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/oneXPU/categories/Accelerators/General/GPGPU/MultiCores/Performance-Optimizaiton/">Performance Optimizaiton</a></li></ul></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/oneXPU/categories/Accelerators/General/MPI/">MPI</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/oneXPU/categories/Accelerators/General/MPI/MultiCores/">MultiCores</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/oneXPU/categories/Accelerators/General/MPI/MultiCores/Performance-Optimizaiton/">Performance Optimizaiton</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/oneXPU/categories/Accelerators/General/MPI/MultiCores/Performance-Optimizaiton/Vectorization/">Vectorization</a></li></ul></li></ul></li></ul></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/oneXPU/categories/Accelerators/MultiCores/">MultiCores</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/oneXPU/categories/Accelerators/MultiCores/Performance-Optimizaiton/">Performance Optimizaiton</a></li><li class="category-list-item"><a class="category-list-link" href="/oneXPU/categories/Accelerators/MultiCores/Vectorization/">Vectorization</a></li></ul></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/oneXPU/categories/GPGPU/">GPGPU</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/oneXPU/categories/GPGPU/Intel-Xeon-Phi/">Intel Xeon Phi</a></li><li class="category-list-item"><a class="category-list-link" href="/oneXPU/categories/GPGPU/MultiCores/">MultiCores</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/oneXPU/categories/GPGPU/MultiCores/Performance-Optimizaiton/">Performance Optimizaiton</a></li></ul></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/oneXPU/categories/General/">General</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/oneXPU/categories/General/MultiCores/">MultiCores</a></li></ul></li></ul>
     </div>
   </div>
 
@@ -295,7 +299,7 @@
   <div class="outer">
     <div id="footer-info" class="inner">
       
-      &copy; 2020 John Doe<br>
+      &copy; 2020 Patric Zhao<br>
       Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>
