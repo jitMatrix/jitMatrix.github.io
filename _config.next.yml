@@ -41,7 +41,7 @@ custom_file_path:
 
 favicon:
   small: /oneXPU/uploads/favicon/favicon.ico
-  # medium: /images/favicon-32x32-next.png
+  medium: /oneXPU/uploads/favicon/favicon.ico
   # apple_touch_icon: /images/apple-touch-icon-next.png
   # safari_pinned_tab: /images/logo.svg
   #android_manifest: /images/manifest.json
@@ -117,8 +117,8 @@ darkmode: false
 # External url should start with http:// or https://
 menu:
   home: / || fa fa-home
-  Opensource: /opensource/ || fa fa-archive
-  Presentation: /presentation/ || fa fa-archive
+  Opensource: /opensource/ || fa fa-code
+  Presentation: /presentation/ || fa fa-file-powerpoint
   tags: /tags/ || fa fa-tags
   categories: /categories/ || fa fa-th
   about: /about/ || fa fa-user
