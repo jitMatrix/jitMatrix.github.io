@@ -29,11 +29,101 @@ The 'gpuR' package was created to bring the power of GPU computing to any R user
 
 ### **Abstract away GPU code:**
 
-The `gpuR` package uses the S4 object oriented system to have explicit classes and methods that all the user to simply cast their `matrix` or `vector` and continue programming in R as normal.  For example: \[code language="r"\] ORDER = 1024 A = matrix(rnorm(ORDER^2), nrow=ORDER) B = matrix(rnorm(ORDER^2), nrow=ORDER) gpuA = gpuMatrix(A, type="double") gpuB = gpuMatrix(B, type="double") C = A %*% B gpuC = gpuA %*% gpuB all.equal(C == gpuC\[\]) \[1\] TRUE \[/code\] The `gpuMatrix` object points to a matrix in RAM which is then computed by the GPU when a desired function is called.  This avoids R's habit of copying the memory of objects.  For example: \[code language="r"\] library(pryr) # Initially points to same object x = matrix(rnorm(16), 4) y = x address(x) \[1\] "0x16177f28" address(y) \[1\] "0x16177f28" # But once modify the second object it creates a copy y\[1,1\] = 0 address(x) \[1\] "0x16177f28" address(y) \[1\] "0x15fbb1d8 \[/code\] In contrast, the same syntax for a `gpuMatrix` will modify the original object in-place without any copy. \[code language="r"\] library(pryr) library(gpuR) # Initially points to same object x = gpuMatrix(rnorm(16), 4, 4) y = x x@address \[1\] <pointer: 0x6baa040> y@address \[1\] <pointer: 0x6baa040> # Modification affects both objects without copy y\[1,1\] = 0 x@address \[1\] <pointer: 0x6baa040> y@address \[1\] <pointer: 0x6baa040> \[/code\]   Each new variable assigned to this object will only copy the pointer thereby making the program more memory efficient.  However, the `gpuMatrix>` class does still require allocating GPU memory and copying data to device for each function call. The most commonly used methods have been overloaded such as  %*%, +, -, *, /, crossprod, tcrossprod, and trig functions among others.  In this way, an R user can create these objects and leverage GPU resources without the need to know a bunch more functions that would break existing algorithms.
+The `gpuR` package uses the S4 object oriented system to have explicit classes and methods that all the user to simply cast their `matrix` or `vector` and continue programming in R as normal.  For example:
+
+```r
+ORDER = 1024
+ 
+A = matrix(rnorm(ORDER^2), nrow=ORDER)
+B = matrix(rnorm(ORDER^2), nrow=ORDER)
+gpuA = gpuMatrix(A, type="double")
+gpuB = gpuMatrix(B, type="double")
+ 
+C = A %*% B
+gpuC = gpuA %*% gpuB
+ 
+all.equal(C == gpuC[])
+[1] TRUE
+```
+
+The `gpuMatrix` object points to a matrix in RAM which is then computed by the GPU when a desired function is called.  This avoids R's habit of copying the memory of objects.  For example:
+
+```r
+library(pryr)
+ 
+# Initially points to same object
+x = matrix(rnorm(16), 4)
+y = x
+ 
+address(x)
+[1] "0x16177f28"
+ 
+address(y)
+[1] "0x16177f28"
+ 
+# But once modify the second object it creates a copy
+y[1,1] = 0
+ 
+address(x)
+[1] "0x16177f28"
+ 
+address(y)
+[1] "0x15fbb1d8
+```
+
+In contrast, the same syntax for a `gpuMatrix` will modify the original object in-place without any copy.
+
+```r
+library(pryr)
+library(gpuR)
+ 
+# Initially points to same object
+x = gpuMatrix(rnorm(16), 4, 4)
+y = x
+ 
+x@address
+[1] <pointer: 0x6baa040>
+ 
+y@address
+[1] <pointer: 0x6baa040>
+ 
+# Modification affects both objects without copy
+y[1,1] = 0
+ 
+x@address
+[1] <pointer: 0x6baa040>
+ 
+y@address
+[1] <pointer: 0x6baa040>
+```
+
+Each new variable assigned to this object will only copy the pointer thereby making the program more memory efficient.  However, the `gpuMatrix>` class does still require allocating GPU memory and copying data to device for each function call. The most commonly used methods have been overloaded such as  %*%, +, -, *, /, crossprod, tcrossprod, and trig functions among others.  In this way, an R user can create these objects and leverage GPU resources without the need to know a bunch more functions that would break existing algorithms.
 
 ### **Distinct Copy/Compute Functionality:**
 
-For the `gpuMatix` and `gpuVector` classes there are companion `vclMatrix` and `vclVector` class that point to objects that persist in the GPU RAM.  In this way, the user explicitly decides when data needs to be moved back to the host.  By avoiding unnecessary data transfer between host and device performance can significantly improve.  For example: \[code language="r"\] vclA = vclMatrix(rnorm(10000), nrow = 100) vclB = vclMatrix(rnorm(10000), nrow = 100) vclC = vclMatrix(rnorm(10000), nrow = 100) # GEMM vclD = vclA %*% vclB # Element-wise addition vclD = vclD + vclC \[/code\] In this code, the three initial matrices already exist in the GPU memory so no data transfer takes place in the GEMM call.  Furthermore, the returned matrix remains in the GPU memory.  In this case, the 'vclD' object is still in GPU RAM. As such, the element-wise addition call also happens directly on the GPU with no data transfers. It is worth also noting that the user can still modify elements, rows, or columns with the exact same syntax as a normal R matrix. \[code language="r"\] vclD\[1,1\] = 42 vclD\[,2\] = rep(12, 100) vclD\[3,\] = rep(23, 100) \[/code\] These operations simply copy the _new_ elements to the GPU and modify the object in-place within the GPU memory. The 'vclD' object is never copied to the host.
+For the `gpuMatix` and `gpuVector` classes there are companion `vclMatrix` and `vclVector` class that point to objects that persist in the GPU RAM.  In this way, the user explicitly decides when data needs to be moved back to the host.  By avoiding unnecessary data transfer between host and device performance can significantly improve.  For example:
+
+```r
+vclA = vclMatrix(rnorm(10000), nrow = 100)
+vclB = vclMatrix(rnorm(10000), nrow = 100)
+vclC = vclMatrix(rnorm(10000), nrow = 100)
+ 
+# GEMM
+vclD = vclA %*% vclB
+ 
+# Element-wise addition
+vclD = vclD + vclC
+```
+
+In this code, the three initial matrices already exist in the GPU memory so no data transfer takes place in the GEMM call.  Furthermore, the returned matrix remains in the GPU memory.  In this case, the 'vclD' object is still in GPU RAM. As such, the element-wise addition call also happens directly on the GPU with no data transfers. It is worth also noting that the user can still modify elements, rows, or columns with the exact same syntax as a normal R matrix.
+
+```r
+vclD[1,1] = 42
+vclD[,2] = rep(12, 100)
+vclD[3,] = rep(23, 100)
+```
+
+These operations simply copy the _new_ elements to the GPU and modify the object in-place within the GPU memory. The 'vclD' object is never copied to the host.
 
 ### Benchmarks:
 

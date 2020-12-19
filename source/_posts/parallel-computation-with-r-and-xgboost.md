@@ -26,7 +26,27 @@ In the following part, we will demonstrate the performance of the R package with
 **1\. Multi-threading on a single machine**
 -------------------------------------------
 
-XGBoost offers the option to parallel the training process in an implicit style on a single machine, which could be a workstation or even your own laptop. This is one of the reasons that the Kaggle community loves it. In R, the switch of multi-threading computation is just a parameter nthread: \[code language="r"\]>require(xgboost) > x = matrix(rnorm(100\*10000), 10000, 100) > y = x %\*% rnorm(100) + rnorm(1000) > >system.time({ + bst = xgboost(data = x, label = y, nthread = 1, nround = 100, verbose = FALSE) + }) user system elapsed 10.98 0.05 11.06 > >system.time({ + bst = xgboost(data = x, label = y, nthread = 4, nround = 100, verbose = FALSE) + }) user system elapsed 20.80 0.67 3.37 \[/code\] In the results from the toy example, there is a noticeable difference between the one-thread and four-thread trainings. As a comparison, we made the following figure from a competition data([https://www.kaggle.com/c/higgs-boson/data](https://www.kaggle.com/c/higgs-boson/data)) on Kaggle. The experiments were run on a laptop with an i7-4700m CPU. ![speedfigure](http://www.parallelr.com/wp-content/uploads/2016/11/SpeedFigure-1024x843.png) The marks R and python are the vanilla gradient boosting machine implementation. XGBoost is the fastest when using only one thread. By employing 4 threads the process can be almost 4x faster. To reproduce the above results, one can find related scripts at:[https://github.com/dmlc/xgboost/tree/master/demo/kaggle-higgs](https://github.com/dmlc/xgboost/tree/master/demo/kaggle-higgs). Note that the plot was made in 2015, thus the results may vary due to changes in the packages.
+XGBoost offers the option to parallel the training process in an implicit style on a single machine, which could be a workstation or even your own laptop. This is one of the reasons that the Kaggle community loves it. In R, the switch of multi-threading computation is just a parameter nthread:
+
+```r
+require(xgboost)
+x = matrix(rnorm(100*10000), 10000, 100)
+y = x %*% rnorm(100) + rnorm(1000)
+
+system.time({
+  bst = xgboost(data = x, label = y, nthread = 1, nround = 100, verbose = FALSE)
+})
+# ser system elapsed
+# 10.98 0.05 11.06
+
+system.time({
+  bst = xgboost(data = x, label = y, nthread = 4, nround = 100, verbose = FALSE)
+})
+# user system elapsed
+# 20.80 0.67 3.37
+```
+
+In the results from the toy example, there is a noticeable difference between the one-thread and four-thread trainings. As a comparison, we made the following figure from a competition data([https://www.kaggle.com/c/higgs-boson/data](https://www.kaggle.com/c/higgs-boson/data)) on Kaggle. The experiments were run on a laptop with an i7-4700m CPU. ![speedfigure](http://www.parallelr.com/wp-content/uploads/2016/11/SpeedFigure-1024x843.png) The marks R and python are the vanilla gradient boosting machine implementation. XGBoost is the fastest when using only one thread. By employing 4 threads the process can be almost 4x faster. To reproduce the above results, one can find related scripts at:[https://github.com/dmlc/xgboost/tree/master/demo/kaggle-higgs](https://github.com/dmlc/xgboost/tree/master/demo/kaggle-higgs). Note that the plot was made in 2015, thus the results may vary due to changes in the packages.
 
 **2\. Parallel on a Cluster**
 -----------------------------
@@ -36,7 +56,38 @@ For some cases where the size of data is too large to fit into the memory, peopl
 **3\. External Memory**
 -----------------------
 
-External memory is a compromise of large size of input and insufficient computational resources. The basic idea is simple: store the input data on an SSD, which is cheaper than memory and faster than HDD, and repeatedly load a chunk of data into memory to train the model partially. Comparing to the parallel training on a cluster, this strategy also uses the approximate algorithm, but is more convenient to configure and call, and is also cheaper for most users. To enable the external memory for R, we need to make sure that the compiler on your machine supports it. Usually it is fine with the latest gcc/clang. For windows users with mingw, however, is not able to try it out. The data files also need to be in the libsvm format on the disk. Files used in this demo can be downloaded at [https://github.com/dmlc/xgboost/tree/master/demo/data](https://github.com/dmlc/xgboost/tree/master/demo/data). Here's the usual way to load the data into memory with xgboost's own data structure: \[code language="r"\]>dtrain = xgb.DMatrix('agaricus.txt.train') \[15:57:38\] 6513x127 matrix with 143286 entries loaded from agaricus.txt.train >dtest = xgb.DMatrix('agaricus.txt.test') \[15:57:38\] 1611x127 matrix with 35442 entries loaded from agaricus.txt.test > >model = xgboost(data = dtrain, nround = 2, objective = "binary:logistic") \[1\] train-error:0.000614 \[2\] train-error:0.001228 \[/code\] Now if we add the suffix: \[code language="r"\]>dtrain = xgb.DMatrix('agaricus.txt.train#train.cache') \[15:57:45\] SparsePage::Writer Finished writing to train.r0-1.cache.row.page \[15:57:45\] SparsePageSource: Finished writing to train.r0-1.cache \[15:57:45\] 6513x127 matrix with 143286 entries loaded from agaricus.txt.train#train.cache >dtest = xgb.DMatrix('agaricus.txt.test#test.cache') \[15:57:45\] SparsePage::Writer Finished writing to test.r0-1.cache.row.page \[15:57:45\] SparsePageSource: Finished writing to test.r0-1.cache \[15:57:45\] 1611x127 matrix with 35442 entries loaded from agaricus.txt.test#test.cache > >model = xgboost(data = dtrain, nround = 2, objective = "binary:logistic") \[15:57:45\] SparsePage::Writer Finished writing to train.r0-1.cache.col.page \[1\] train-error:0.000614 \[2\] train-error:0.001228 \[/code\] Note the only difference is just the suffix: A "#" and the string following. The suffix can be arbitrary string as the prefix of the generated cache files, as printed in the output. With the suffix, the function automatically marks the file for external memory training. In the external memory mode we can also perform multi-threading training for each chunk of data, because the chunks are taken into the training process in a linear relationship. More details are included in [this paper](http://www.kdd.org/kdd2016/papers/files/rfp0697-chenAemb.pdf).
+External memory is a compromise of large size of input and insufficient computational resources. The basic idea is simple: store the input data on an SSD, which is cheaper than memory and faster than HDD, and repeatedly load a chunk of data into memory to train the model partially. Comparing to the parallel training on a cluster, this strategy also uses the approximate algorithm, but is more convenient to configure and call, and is also cheaper for most users. To enable the external memory for R, we need to make sure that the compiler on your machine supports it. Usually it is fine with the latest gcc/clang. For windows users with mingw, however, is not able to try it out. The data files also need to be in the libsvm format on the disk. Files used in this demo can be downloaded at [https://github.com/dmlc/xgboost/tree/master/demo/data](https://github.com/dmlc/xgboost/tree/master/demo/data). Here's the usual way to load the data into memory with xgboost's own data structure:
+
+```r
+dtrain = xgb.DMatrix('agaricus.txt.train')
+# [15:57:38] 6513x127 matrix with 143286 entries loaded from agaricus.txt.train
+dtest = xgb.DMatrix('agaricus.txt.test')
+# [15:57:38] 1611x127 matrix with 35442 entries loaded from agaricus.txt.test
+
+model = xgboost(data = dtrain, nround = 2, objective = "binary:logistic")
+# [1] train-error:0.000614 
+# [2] train-error:0.001228
+```
+
+Now if we add the suffix:
+
+```r
+dtrain = xgb.DMatrix('agaricus.txt.train#train.cache')
+# [15:57:45] SparsePage::Writer Finished writing to train.r0-1.cache.row.page
+# [15:57:45] SparsePageSource: Finished writing to train.r0-1.cache
+# [15:57:45] 6513x127 matrix with 143286 entries loaded from agaricus.txt.train#train.cache
+dtest = xgb.DMatrix('agaricus.txt.test#test.cache')
+# [15:57:45] SparsePage::Writer Finished writing to test.r0-1.cache.row.page
+# [15:57:45] SparsePageSource: Finished writing to test.r0-1.cache
+# [15:57:45] 1611x127 matrix with 35442 entries loaded from agaricus.txt.test#test.cache
+
+model = xgboost(data = dtrain, nround = 2, objective = "binary:logistic")
+# [15:57:45] SparsePage::Writer Finished writing to train.r0-1.cache.col.page
+# [1] train-error:0.000614 
+# [2] train-error:0.001228
+```
+
+Note the only difference is just the suffix: A "#" and the string following. The suffix can be arbitrary string as the prefix of the generated cache files, as printed in the output. With the suffix, the function automatically marks the file for external memory training. In the external memory mode we can also perform multi-threading training for each chunk of data, because the chunks are taken into the training process in a linear relationship. More details are included in [this paper](http://www.kdd.org/kdd2016/papers/files/rfp0697-chenAemb.pdf).
 
 * * *
 

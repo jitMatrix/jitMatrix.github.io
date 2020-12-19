@@ -40,67 +40,37 @@ Table-1 R-25 Benchmark Description
 
 **R-25 Benchmark Description**
 
-1
+1 Creation,transposition,deformation of a 2500*2500 matrix
 
-Creation,transposition,deformation of a 2500*2500 matrix
+2 2400*2400 normal distributed random matrix
 
-2
+3 Sorting of 7,000,000 random values
 
-2400*2400 normal distributed random matrix
+4 2800*2800 cross-product matrix
 
-3
+5 Linear regression over a 3000*3000 matrix
 
-Sorting of 7,000,000 random values
+6 FFT over 2,400,000 random values
 
-4
+7 Eigenvalues of a 640*640 random values
 
-2800*2800 cross-product matrix
+8 Determinant of a 2500*2500 random matrix
 
-5
+9 Cholesky decomposition of a 3000*3000 matrix
 
-Linear regression over a 3000*3000 matrix
+10 Inverse of a 1600*1600 random matrix
 
-6
+11 3,500,000 Fibonacci numbers calculation(vector calculation)
 
-FFT over 2,400,000 random values
+12 Creation of a 3000*3000 Hilbert matrix(matrix calculation)
 
-7
+13 Grand common divisors of 400,000 pairs(recursion)
 
-Eigenvalues of a 640*640 random values
+14 Creation of a 500*500 Toeplitz matrix(loops)
 
-8
+15 Escoufier's method on a 45*45 matrix(mixed)
 
-Determinant of a 2500*2500 random matrix
-
-9
-
-Cholesky decomposition of a 3000*3000 matrix
-
-10
-
-Inverse of a 1600*1600 random matrix
-
-11
-
-3,500,000 Fibonacci numbers calculation(vector calculation)
-
-12
-
-Creation of a 3000*3000 Hilbert matrix(matrix calculation)
-
-13
-
-Grand common divisors of 400,000 pairs(recursion)
-
-14
-
-Creation of a 500*500 Toeplitz matrix(loops)
-
-15
-
-Escoufier's method on a 45*45 matrix(mixed)
-
-  In our benchmark, we measured the performance of R-25 benchmark on various hardware platforms, including Intel Xeon CPU processors, NVIDIA GPGPU cards and Intel Xeon Phi coprocessors. Meanwhile, R built with different BLAS libraries results in different performance, so we tested R with self-contained BLAS, OpenBLAS, Intel MKL and CUDA BLAS. **Because the performance of self-contained BLAS is** **hugely**** lower than the other BLAS library and in practice HPAC users of R always built R with high performance BLAS, the testing results running with self-contained BLAS is negligible. ** Moreover, in order to investigate the performance of functions or algorithms such as GEMM that HPC users mostly used, we explore the speed-up when varying the size of the matrices and number of elements as known as [scalability](https://en.wikipedia.org/wiki/Scalability).  
+In our benchmark, we measured the performance of R-25 benchmark on various hardware platforms, including Intel Xeon CPU processors, NVIDIA GPGPU cards and Intel Xeon Phi coprocessors. Meanwhile, R built with different BLAS libraries results in different performance, so we tested R with self-contained BLAS, OpenBLAS, Intel MKL and CUDA BLAS. **Because the performance of self-contained BLAS is** **hugely**** lower than the other BLAS library and in practice HPAC users of R always built R with high performance BLAS, the testing results running with self-contained BLAS is negligible. ** Moreover, in order to investigate the performance of functions or algorithms such as GEMM that HPC users mostly used, we explore the speed-up when varying the size of the matrices and number of elements as known as [scalability](https://en.wikipedia.org/wiki/Scalability).  
 
 System Descriptions
 -------------------
@@ -170,34 +140,154 @@ In this article, we tested the R-benchmark-25.R script on the different hardware
 **Appendix : How to build R with different BLAS library**
 ---------------------------------------------------------
 
-#### Stock R
+## STOCK R
+(1) Stock R build
 
-(1) Stock R build Download base R package from the R project [website](http://www.r-project.org/), the current package is R-3.2.3. Enter into the R root directory, and execute _  \> $./configure --with-readline=no --with-x=no --prefix=$HOME/R-3.2.3-ori_ _  \> $make -j4_ _  \> $make install_ (2) Add R bin directory and library directory to the environment variables PATH and LD\_LIBRARY\_PATH seperately, just like as: _  \> export PATH=$HOME/R-3.2.3-ori/bin:$PATH_ _  \> export LD\_LIBRARY\_PATH=$HOME/R-3.2.3-ori/lib64/R/lib:$LD\_LIBRARY\_PATH_
+Download base R package from the R project website, the current package is R-3.2.3.
 
-#### R with OpenBLAS
+Enter into the R root directory, and execute
 
-(1) OpenBLAS build Download OpenBlas-0.2.15.tar.gz from [http://www.openblas.net/](http://www.openblas.net/) Change directory to OpenBLAS Home directory, and execute _  \> $make_ _  \> $make PREFIX=$OPENBLAS\_INSTALL\_DIRECTORY install_ (2) Set the OpenBLAS library environment (3) Run benchmark _  \> $LD\_PRELOAD=$OPENBLAS\_HOME/lib/libopenblas.so R_
+  > $./configure –with-readline=no –with-x=no –prefix=$HOME/R-3.2.3-ori
 
-#### R with Intel MKL
+  > $make -j4
 
-(1）Obtain Intel parallel studio software from [Intel website](https://software.intel.com/en-us/intel-parallel-studio-xe) (2) Install the parallel studio (3) Set the Intel compiler and MKL library environment (4) Build R with MKL Link MKL libraries configuration file mkl.conf as follows: a. Sequencial MKL or MKL single thread
+  > $make install
 
-_#make sure intel compiler is installed and loaded which can be set in .bashrc_ _\## as e.g._ _source /opt/intel/bin/compilervars.sh intel64_ _MKL\_LIB\_PATH=/opt/intel/mkl/lib/intel64## Use intel compiler_ _CC='icc -std=c99'_ _CFLAGS='-g -O3 -wd188 -ip 'F77='ifort'_ _FFLAGS='-g -O3 'CXX='icpc'_ _CXXFLAGS='-g -O3 'FC='ifort'_ _FCFLAGS='-g -O3 '## MKL sequential, ICC_ _MKL=" -L${MKL\_LIB\_PATH} \_ _-Wl,--start-group \_ _-lmkl\_intel\_lp64 \_ _-lmkl_sequential \_ _-lmkl_core \_ _-Wl,--end-group"_
+(2) Add R bin directory and library directory to the environment variables PATH and LD_LIBRARY_PATH seperately, just like as:
 
-b.  OpenMP Threading MKL
+  > export PATH=$HOME/R-3.2.3-ori/bin:$PATH
 
-_#make sure intel compiler is installed and loaded which can be set in .bashrc_ _\## as e.g._ _source /opt/intel/bin/compilervars.sh intel64_ _MKL\_LIB\_PATH=/opt/intel/mkl/lib/intel64## Use intel compiler_ _CC='icc -std=c99'_ _CFLAGS='-g -O3 -wd188 -ip 'F77='ifort'_ _FFLAGS='-g -O3 'CXX='icpc'_ _CXXFLAGS='-g -O3 'FC='ifort'_ _FCFLAGS='-g -O3 '## MKL With Intel MP threaded , ICC_ _MKL=" -L${MKL\_LIB\_PATH} \_ _-Wl,--start-group \_ _-lmkl\_intel\_lp64 \_ _-lmkl\_intel\_thread \_ _-lmkl_core \_ _-Wl,--end-group \_ _-liomp5 -lpthread"_
+  > export LD_LIBRARY_PATH=$HOME/R-3.2.3-ori/lib64/R/lib:$LD_LIBRARY_PATH
 
-build R with following command, _  \> $./configure --prefix=$HOME/R-3.2.3-mkl-icc --with-readline=no --with-x=no --with-blas="$MKL" --with-lapack CC='icc -std=c99' CFLAGS='-g -O3 -wd188 -ip ' F77='ifort' FFLAGS='-g -O3 ' CXX='icpc' CXXFLAGS='-g -O3 ' FC='ifort' FCFLAGS='-g -O3 '_ _  \> $make -j 4; make install_ (5) Set $HOME/R-3.2.3-mkl-icc environment
+## R WITH OPENBLAS
+(1) OpenBLAS build
 
-####  R with CUDA BLAS 
+Download OpenBlas-0.2.15.tar.gz from http://www.openblas.net/
 
-(1) Install the driver and CUDA tools with version  up to 6.5 for NVIDIA Tesla Cards (2)Set the CUDA environment (3)Edit the nvblas.conf file
+Change directory to OpenBLAS Home directory, and execute
 
-_\# This is the configuration file to use NVBLAS Library_ _\# Setup the environment variable NVBLAS\_CONFIG\_FILE to specify your own config file._ _\# By default, if NVBLAS\_CONFIG\_FILE is not defined,_ _\# NVBLAS Library will try to open the file "nvblas.conf" in its current directory_ _\# Example : NVBLAS\_CONFIG\_FILE /home/cuda\_user/my\_nvblas.conf_ _\# The config file should have restricted write permissions accesses# Specify which output log file (default is stderr)_ _NVBLAS_LOGFILE nvblas.log#Put here the CPU BLAS fallback Library of your choice_ _#It is strongly advised to use full path to describe the location of the CPU Library_ _NVBLAS\_CPU\_BLAS_LIB /opt/R-3.2.3-ori/lib64/R/lib/libRblas.so_ _#NVBLAS\_CPU\_BLAS\_LIB &lt;mkl\_path\_installtion&gt;/libmkl\_rt.so# List of GPU devices Id to participate to the computation_ _\# Use ALL if you want all your GPUs to contribute_ _\# Use ALL0, if you want all your GPUs of the same type as device 0 to contribute_ _\# However, NVBLAS consider that all GPU have the same performance and PCI bandwidth_ _\# By default if no GPU are listed, only device 0 will be used#NVBLAS\_GPU\_LIST 0 2 4_ _#NVBLAS\_GPU\_LIST ALL_ _NVBLAS\_GPU\_LIST ALL# Tile Dimension_ _NVBLAS\_TILE\_DIM 2048# Autopin Memory_ _NVBLAS\_AUTOPIN\_MEM_ENABLED#List of BLAS routines that are prevented from running on GPU (use for debugging purpose_ _\# The current list of BLAS routines supported by NVBLAS are_ _\# GEMM, SYRK, HERK, TRSM, TRMM, SYMM, HEMM, SYR2K, HER2K#NVBLAS\_GPU\_DISABLED_SGEMM_ _#NVBLAS\_GPU\_DISABLED_DGEMM_ _#NVBLAS\_GPU\_DISABLED_CGEMM_ _#NVBLAS\_GPU\_DISABLED_ZGEMM# Computation can be optionally hybridized between CPU and GPU_ _\# By default, GPU-supported BLAS routines are ran fully on GPU_ _\# The option NVBLAS\_CPU\_RATIO_&lt;BLAS_ROUTINE&gt; give the ratio \[0,1\]_ _\# of the amount of computation that should be done on CPU_ _\# CAUTION : this option should be used wisely because it can actually_ _\# significantly reduced the overall performance if too much work is given to CPU#NVBLAS\_CPU\_RATIO_CGEMM 0.07_
+  > $make
 
-Set NVBLAS\_CONFIG\_FILE to the nvblas.conf location (4) Run the benchmark _  \> LD_PRELOAD=/opt/cuda-7.5/lib64/libnvblas.so R_
+  > $make PREFIX=$OPENBLAS_INSTALL_DIRECTORY install
 
-####  R with MKL on Intel Xeon Phi
+(2) Set the OpenBLAS library environment
 
-(1) Build R with MKL Build R with MKL is same to Threaded MKL at 6 (2) Enable MKL  MIC Automatic Offload Mode _  \> export MKL\_MIC\_ENABLE=1_ _  \> export MIC\_KMP\_AFFINITY=compact_ Otherwise , you can set the workload division between host CPU and MIC card. If one host has two MIC cards, you could set: _  \> export MKL\_HOST\_WORKDIVISION=0.2_ _  \> export MKL\_MIC\_0_WORKDIVISION=0.4_ _  \> export MKL\_MIC\_1_WORKDIVISION=0.4_
+(3) Run benchmark
+
+  > $LD_PRELOAD=$OPENBLAS_HOME/lib/libopenblas.so R
+
+## R WITH INTEL MKL
+(1）Obtain Intel parallel studio software from Intel website
+
+(2) Install the parallel studio
+
+(3) Set the Intel compiler and MKL library environment
+
+(4) Build R with MKL
+
+Link MKL libraries configuration file mkl.conf as follows:
+
+a. Sequencial MKL or MKL single thread
+
+#make sure intel compiler is installed and loaded which can be set in .bashrc
+## as e.g.
+source /opt/intel/bin/compilervars.sh intel64
+MKL_LIB_PATH=/opt/intel/mkl/lib/intel64## Use intel compiler
+CC=’icc -std=c99′
+CFLAGS=’-g -O3 -wd188 -ip ‘F77=’ifort’
+FFLAGS=’-g -O3 ‘CXX=’icpc’
+CXXFLAGS=’-g -O3 ‘FC=’ifort’
+FCFLAGS=’-g -O3 ‘## MKL sequential, ICC
+MKL=” -L${MKL_LIB_PATH} \
+-Wl,–start-group \
+-lmkl_intel_lp64 \
+-lmkl_sequential \
+-lmkl_core \
+-Wl,–end-group”
+b.  OpenMP Threading MKL
+
+#make sure intel compiler is installed and loaded which can be set in .bashrc
+## as e.g.
+source /opt/intel/bin/compilervars.sh intel64
+MKL_LIB_PATH=/opt/intel/mkl/lib/intel64## Use intel compiler
+CC=’icc -std=c99′
+CFLAGS=’-g -O3 -wd188 -ip ‘F77=’ifort’
+FFLAGS=’-g -O3 ‘CXX=’icpc’
+CXXFLAGS=’-g -O3 ‘FC=’ifort’
+FCFLAGS=’-g -O3 ‘## MKL With Intel MP threaded , ICC
+MKL=” -L${MKL_LIB_PATH} \
+-Wl,–start-group \
+-lmkl_intel_lp64 \
+-lmkl_intel_thread \
+-lmkl_core \
+-Wl,–end-group \
+-liomp5 -lpthread”
+build R with following command,
+
+  > $./configure –prefix=$HOME/R-3.2.3-mkl-icc –with-readline=no –with-x=no –with-blas=”$MKL” –with-lapack CC=’icc -std=c99′ CFLAGS=’-g -O3 -wd188 -ip ‘ F77=’ifort’ FFLAGS=’-g -O3 ‘ CXX=’icpc’ CXXFLAGS=’-g -O3 ‘ FC=’ifort’ FCFLAGS=’-g -O3 ‘
+
+  > $make -j 4; make install
+
+(5) Set $HOME/R-3.2.3-mkl-icc environment
+
+ R WITH CUDA BLAS 
+(1) Install the driver and CUDA tools with version  up to 6.5 for NVIDIA Tesla Cards
+
+(2)Set the CUDA environment
+
+(3)Edit the nvblas.conf file
+
+```bash
+# This is the configuration file to use NVBLAS Library
+# Setup the environment variable NVBLAS_CONFIG_FILE to specify your own config file.
+# By default, if NVBLAS_CONFIG_FILE is not defined,
+# NVBLAS Library will try to open the file “nvblas.conf” in its current directory
+# Example : NVBLAS_CONFIG_FILE /home/cuda_user/my_nvblas.conf
+# The config file should have restricted write permissions accesses# Specify which output log file (default is stderr)
+NVBLAS_LOGFILE nvblas.log#Put here the CPU BLAS fallback Library of your choice
+#It is strongly advised to use full path to describe the location of the CPU Library
+NVBLAS_CPU_BLAS_LIB /opt/R-3.2.3-ori/lib64/R/lib/libRblas.so
+#NVBLAS_CPU_BLAS_LIB &lt;mkl_path_installtion&gt;/libmkl_rt.so# List of GPU devices Id to participate to the computation
+# Use ALL if you want all your GPUs to contribute
+# Use ALL0, if you want all your GPUs of the same type as device 0 to contribute
+# However, NVBLAS consider that all GPU have the same performance and PCI bandwidth
+# By default if no GPU are listed, only device 0 will be used#NVBLAS_GPU_LIST 0 2 4
+#NVBLAS_GPU_LIST ALL
+NVBLAS_GPU_LIST ALL# Tile Dimension
+NVBLAS_TILE_DIM 2048# Autopin Memory
+NVBLAS_AUTOPIN_MEM_ENABLED#List of BLAS routines that are prevented from running on GPU (use for debugging purpose
+# The current list of BLAS routines supported by NVBLAS are
+# GEMM, SYRK, HERK, TRSM, TRMM, SYMM, HEMM, SYR2K, HER2K#NVBLAS_GPU_DISABLED_SGEMM
+#NVBLAS_GPU_DISABLED_DGEMM
+#NVBLAS_GPU_DISABLED_CGEMM
+#NVBLAS_GPU_DISABLED_ZGEMM# Computation can be optionally hybridized between CPU and GPU
+# By default, GPU-supported BLAS routines are ran fully on GPU
+# The option NVBLAS_CPU_RATIO_&lt;BLAS_ROUTINE&gt; give the ratio [0,1]
+# of the amount of computation that should be done on CPU
+# CAUTION : this option should be used wisely because it can actually
+# significantly reduced the overall performance if too much work is given to CPU#NVBLAS_CPU_RATIO_CGEMM 0.07
+```
+Set NVBLAS_CONFIG_FILE to the nvblas.conf location
+
+(4) Run the benchmark
+
+  > LD_PRELOAD=/opt/cuda-7.5/lib64/libnvblas.so R
+
+## R WITH MKL ON INTEL XEON PHI
+(1) Build R with MKL
+
+Build R with MKL is same to Threaded MKL at 6
+
+(2) Enable MKL  MIC Automatic Offload Mode
+
+  > export MKL_MIC_ENABLE=1
+
+  > export MIC_KMP_AFFINITY=compact
+
+Otherwise , you can set the workload division between host CPU and MIC card. If one host has two MIC cards, you could set:
+
+  > export MKL_HOST_WORKDIVISION=0.2
+
+  > export MKL_MIC_0_WORKDIVISION=0.4
+
+  > export MKL_MIC_1_WORKDIVISION=0.4

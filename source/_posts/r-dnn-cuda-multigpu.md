@@ -34,26 +34,99 @@ Now, we begin to introduce our [ninja](https://en.wikipedia.org/wiki/Ninja) skil
 
 **What is your opinion about the next step of optimizations?**
 
-[](http://www.parallelr.com/wp-content/uploads/2016/03/orig.png)[![R_ANN](http://www.parallelr.com/wp-content/uploads/2016/03/orig-1.png)](http://www.parallelr.com/wp-content/uploads/2016/03/orig-1.png) It’s obvious that the function ‘pmax’ accounts for lots of runtimes (**31.58** secs) following ‘%*%’ (**53.72** secs) since ‘pmax’ is implemented by R and it will be very slow when the data size increase. (btw, you can try to increase the number of neurons in hidden layer to 1024 and profiling the code again to figure out the ratio of 'pmax' in the whole computation).  Reviewing the functionality of ‘pmax’ in our DNN case, we implement the ReLU function and get the maximum value among input value and 0 for every neuron in hidden layer. Furthermore, because our algorithm is vectorized by matrices for high performance,  the input of ‘pmax’ is a two-dimensional matrix and we can parallel maximum function into each element easily. So, let’s start to parallel the ReLu function by CUDA. I will skip the details of CUDA programming in this blog, you can refer programming guide in [here](http://docs.nvidia.com/cuda/cuda-c-programming-guide/#axzz47CbpOe1j). First, we can write the CUDA code to compare the input value with ZERO. Despite it  is a very naïve implementation, it is still very fast than original R code. Throughout this kernel code can be executed in NVIDIA GPU, it is written by CUDA C rather than R. Next, we need to call it from R environment. In general, we have to write wrapper functions to bridge R,  C/C++, and CUDA. [Prof. Matloff](http://heather.cs.ucdavis.edu/matloff.html) and I have written the blog introduced linking R with CUDA step by step regarding with .Call() and .C() function with two-level wrappers from R to C/C++ and C/C++ to CUDA ([here](https://devblogs.nvidia.com/parallelforall/accelerate-r-applications-cuda/)  and [here](http://blog.revolutionanalytics.com/2015/01/parallel-programming-with-gpus-and-r.html)).  A brief summary about the major difference of .C() and .Call() is shown in below table. [![R_Cal_ function](http://www.parallelr.com/wp-content/uploads/2016/03/C_Call.png)](http://www.parallelr.com/wp-content/uploads/2016/03/C_Call.png) From the performance view, the .Call() function is selected since little overhead between R and C/C++ by avoiding explicit copying data from R to C/C++ and then from C/C++ back to R. In below code, we access data by a pointer and heavily use R internal structures with very efficient way. \[code language="C"\] // difinition for R extern "C" { SEXP pmax\_cuda(SEXP A, SEXP threshold, SEXP devID); } //CUDA: simple implementation of pmax \_\_global__ void pmax\_kernel(double \*A, const int M, const int N, const double threshold) { int tid = blockIdx.x \* blockDim.x + threadIdx.x; if(tid &lt; M\*N) { A\[tid\] = (A\[tid\]&gt;threshold)?A\[tid\]:0; } return; } // Wrapper code between R and CUDA SEXP pmax\_cuda(SEXP A, SEXP threshold, SEXP devID) { // data structure for GPU double \*A\_host = NULL; double \*A\_d = NULL; double gw = 0; int mm = 0, nn = 0; int gpuID = 0; // data transfer from R to C by pointers A\_host = REAL(A); SEXP Rdim = getAttrib(A, R\_DimSymbol); mm = INTEGER(Rdim)\[0\]; nn = INTEGER(Rdim)\[1\]; gw = REAL(threshold)\[0\]; gpuID = INTEGER(devID)\[0\]; // for multiple GPU case cudaSetDevice(gpuID); // return value, allocated in C and can be used in R directly SEXP Rval; PROTECT(Rval = allocVector(REALSXP, mm\*nn)); // GPU memory allocation cudaMalloc(&amp;A\_d, mm\*nn\*sizeof(double)); if(NULL == A\_d) { printf("\\nNo RAM space in GPU!\\n"); UNPROTECT(1); return R\_NilValue; } // memory copy from CPU to GPU cudaMemcpy(A\_d, A\_host, mm\*nn\*sizeof(double), cudaMemcpyHostToDevice); // CUDA: pmax, really computation parts pmax\_kernel&lt;&lt;&lt;(mm\*nn-1)/512+1, 512&gt;&gt;&gt;(A\_d, mm, nn, gw); cudaMemcpy(REAL(Rval), A\_d, mm\*nn*sizeof(double), cudaMemcpyDeviceToHost); cudaDeviceSynchronize(); // Free unused memory of GPU if(A\_d) {cudaFree(A\_d); A_d=NULL;} UNPROTECT(1); return Rval; } \[/code\] Next, compile the C/C++ and CUDA code together to a shared object file (.so) or dynamic link library (.dll) for loading in R.
+[](http://www.parallelr.com/wp-content/uploads/2016/03/orig.png)[![R_ANN](http://www.parallelr.com/wp-content/uploads/2016/03/orig-1.png)](http://www.parallelr.com/wp-content/uploads/2016/03/orig-1.png) It’s obvious that the function ‘pmax’ accounts for lots of runtimes (**31.58** secs) following ‘%*%’ (**53.72** secs) since ‘pmax’ is implemented by R and it will be very slow when the data size increase. (btw, you can try to increase the number of neurons in hidden layer to 1024 and profiling the code again to figure out the ratio of 'pmax' in the whole computation).  Reviewing the functionality of ‘pmax’ in our DNN case, we implement the ReLU function and get the maximum value among input value and 0 for every neuron in hidden layer. Furthermore, because our algorithm is vectorized by matrices for high performance,  the input of ‘pmax’ is a two-dimensional matrix and we can parallel maximum function into each element easily. So, let’s start to parallel the ReLu function by CUDA. I will skip the details of CUDA programming in this blog, you can refer programming guide in [here](http://docs.nvidia.com/cuda/cuda-c-programming-guide/#axzz47CbpOe1j). First, we can write the CUDA code to compare the input value with ZERO. Despite it  is a very naïve implementation, it is still very fast than original R code. Throughout this kernel code can be executed in NVIDIA GPU, it is written by CUDA C rather than R. Next, we need to call it from R environment. In general, we have to write wrapper functions to bridge R,  C/C++, and CUDA. [Prof. Matloff](http://heather.cs.ucdavis.edu/matloff.html) and I have written the blog introduced linking R with CUDA step by step regarding with .Call() and .C() function with two-level wrappers from R to C/C++ and C/C++ to CUDA ([here](https://devblogs.nvidia.com/parallelforall/accelerate-r-applications-cuda/)  and [here](http://blog.revolutionanalytics.com/2015/01/parallel-programming-with-gpus-and-r.html)).  A brief summary about the major difference of .C() and .Call() is shown in below table. [![R_Cal_ function](http://www.parallelr.com/wp-content/uploads/2016/03/C_Call.png)](http://www.parallelr.com/wp-content/uploads/2016/03/C_Call.png)
+
+From the performance view, the .Call() function is selected since little overhead between R and C/C++ by avoiding explicit copying data from R to C/C++ and then from C/C++ back to R. In below code, we access data by a pointer and heavily use R internal structures with very efficient way.
+
+```c
+// difinition for R
+extern "C" {
+   SEXP pmax_cuda(SEXP A, SEXP threshold, SEXP devID);
+}
+ 
+//CUDA: simple implementation of pmax
+__global__ void pmax_kernel(double *A, 
+                            const int M, 
+                            const int N, 
+                            const double threshold)
+{
+  int tid = blockIdx.x * blockDim.x + threadIdx.x;
+  if(tid &lt; M*N) { A[tid] = (A[tid]&gt;threshold)?A[tid]:0;
+  }
+  return;
+}
+ 
+// Wrapper code between R and CUDA 
+SEXP pmax_cuda(SEXP A, SEXP threshold, SEXP devID)
+{
+   // data structure for GPU
+   double *A_host = NULL;
+   double *A_d = NULL;
+   double gw = 0;
+   int mm = 0, nn = 0;
+   int gpuID = 0;
+  
+   // data transfer from R to C by pointers
+   A_host = REAL(A);
+   SEXP Rdim = getAttrib(A, R_DimSymbol);
+   mm = INTEGER(Rdim)[0];
+   nn = INTEGER(Rdim)[1];
+   gw = REAL(threshold)[0];
+   gpuID = INTEGER(devID)[0];
+ 
+   // for multiple GPU case 
+   cudaSetDevice(gpuID);
+  
+   // return value, allocated in C and can be used in R directly
+   SEXP Rval;
+   PROTECT(Rval = allocVector(REALSXP, mm*nn));
+ 
+   // GPU memory allocation
+   cudaMalloc(&amp;A_d, mm*nn*sizeof(double));
+   if(NULL == A_d) {
+     printf("\nNo RAM space in GPU!\n");
+     UNPROTECT(1);
+     return R_NilValue;
+   }
+  
+   // memory copy from CPU to GPU
+   cudaMemcpy(A_d, A_host, mm*nn*sizeof(double), cudaMemcpyHostToDevice); 
+  
+   // CUDA: pmax, really computation parts
+   pmax_kernel&lt;&lt;&lt;(mm*nn-1)/512+1, 512&gt;&gt;&gt;(A_d, mm, nn, gw);
+   cudaMemcpy(REAL(Rval), A_d, mm*nn*sizeof(double), cudaMemcpyDeviceToHost); 
+   cudaDeviceSynchronize();
+ 
+   // Free unused memory of GPU
+   if(A_d) {cudaFree(A_d); A_d=NULL;}
+ 
+   UNPROTECT(1);
+   return Rval;
+}
+```
+
+Next, compile the C/C++ and CUDA code together to a shared object file (.so) or dynamic link library (.dll) for loading in R.
 
 > nvcc -O3 -arch=sm_35 -G -I.../CUDA-v7.5.18/include -I.../R-3.2.0/bin/lib64/R/include/ -L.../R/lib64/R/lib --shared -Xcompiler -fPIC -o cudaR.so cudaR.cu
 
 Finally, the CUDA version of 'pmax' can be called in R as simple as R builtin function with R's wrapper, and,  for infrastructure engineer, writing a nice wrapper is still an important job :)
 
-\# preload static object file
-[dyn.load](http://inside-r.org/r-doc/base/dyn.load)("cudaR.so")
- 
-\# GPU version of pmax
-pmax.cuda <- [function](http://inside-r.org/r-doc/base/function)(A, threshold, devID=0L)
+```r
+# preload static object file
+dyn.load("cudaR.so")
+ 
+# GPU version of pmax
+pmax.cuda <- function(A, threshold, devID=0L)
 {
-  rst <- [.Call](http://inside-r.org/r-doc/base/.Call)("pmax_cuda",
+  rst <- .Call("pmax_cuda",
                 A,
                 threshold,
-                [as.integer](http://inside-r.org/r-doc/base/as.integer)(devID)
+                as.integer(devID)
 	      )
-  [dim](http://inside-r.org/r-doc/base/dim)(rst) <\- [dim](http://inside-r.org/r-doc/base/dim)(A)
-  [return](http://inside-r.org/r-doc/base/return)(rst)
+  dim(rst) <- dim(A)
+  return(rst)
 }
+```
 
 Show our performance now!  By replacing 'pmax' with  new 'pmax.cuda',  the execution time of pmax reduces to **6.7** seconds from original 31.58 so it’s **5X speedup** and totally the **1.2X speedup** gains. [![cuda pmax ](http://www.parallelr.com/wp-content/uploads/2016/03/cuda-300x291.png)](http://www.parallelr.com/wp-content/uploads/2016/03/cuda.png)  
 
@@ -70,37 +143,44 @@ Parallel computing is not a novel concept in R community. Data scientist is fami
 
 In R, this flow can be implemented by ‘multicores’ packages (currently, ‘parallel’ package includes both ‘multicores’ and ‘snow’ in CRAN). In below, flow chart is the standard workflow of ‘multicore’ packages with our DNN. 'mclapply' function creates two processors which shares memory by copy-on-write and each processor train the network by parts of data. After several steps, the master processor will do a reduce step to collect  weights from two child processors and average them.In next iteration, two children will use the new weights. [![mclappy with GPU](http://www.parallelr.com/wp-content/uploads/2016/03/mclappy-1024x555.png)](http://www.parallelr.com/wp-content/uploads/2016/03/mclappy.png) Now, let’s see the details of how R code handles this data parallel model based on below real codes . 1. 'mclapply' creates N (devNum) workers based on 'mc.cores' and each worker will execute the same function, train.dnn.cublas, with different index (1:devNum); 2. the data is divided into N (devNum) parts and each worker will load their data simultaneously by their ID then the computation, even writing, can be ideally parallelized; 3. all workers exit when 'mclapply' is done and the results from every worker will be saved in a list (res).  Master continues to remain parts and then calculate the average of all weights and bias. 4. in the next loop, the 'mclapply' will use the averaged model (para.model) to train again.
 
-\# Parallel Training
-res <- **mclapply**(1:devNum, [function](http://inside-r.org/r-doc/base/function)(id) { train.dnn.cublas(x, y, 
+```r
+# Parallel Training
+res <- mclapply(1:devNum, function(id) { train.dnn.cublas(x, y, 
                                          omodel=para.model,
-                                         taindata=traindata\[N.start\[id\]:N.end\[id\],\],
-                                         devType=“**GPU**”, devID=(id-1), . . .) },
+                                         taindata=traindata[N.start[id]:N.end[id],],
+                                         devType=“GPU”, devID=(id-1), . . .) },
                 mc.cores=devNum, 
                 mc.preschedule=TRUE)
- 
- \# Construct new model with parallel weights
-    [D](http://inside-r.org/r-doc/stats/D) <\- res\[\[1\]\]$D
-    H <- res\[\[1\]\]$H
-    K <- res\[\[1\]\]$K
-    for(i in 2:devNum) {
-            res\[\[1\]\]$W1 <- res\[\[1\]\]$W1 + res\[\[i\]\]$W1
-            res\[\[1\]\]$W2 <- res\[\[1\]\]$W2 + res\[\[i\]\]$W2
-            res\[\[1\]\]$b1 <- res\[\[1\]\]$b1 + res\[\[i\]\]$b1
-            res\[\[1\]\]$b2 <- res\[\[1\]\]$b2 + res\[\[i\]\]$b2
-    }
- 
-    para.model <- [list](http://inside-r.org/r-doc/base/list)( [D](http://inside-r.org/r-doc/stats/D) = [D](http://inside-r.org/r-doc/stats/D),
-                        H = H,
-                        K = K,
-                        \# weights and bias
-                        W1= res\[\[1\]\]$W1/devNum, 
-                        b1= res\[\[1\]\]$b1/devNum, 
-                        W2= res\[\[1\]\]$W2/devNum, 
-                        b2= res\[\[1\]\]$b2/devNum)
+ 
+# Construct new model with parallel weights
+D <- res[[1]]$D
+H <- res[[1]]$H
+K <- res[[1]]$K
+for(i in 2:devNum) {
+        res[[1]]$W1 <- res[[1]]$W1 + res[[i]]$W1
+        res[[1]]$W2 <- res[[1]]$W2 + res[[i]]$W2
+        res[[1]]$b1 <- res[[1]]$b1 + res[[i]]$b1
+        res[[1]]$b2 <- res[[1]]$b2 + res[[i]]$b2
+}
+
+para.model <- list( D = D,
+                    H = H,
+                    K = K,
+                    # weights and bias
+                    W1= res[[1]]$W1/devNum, 
+                    b1= res[[1]]$b1/devNum, 
+                    W2= res[[1]]$W2/devNum, 
+                    b2= res[[1]]$b2/devNum)
+```
 
 #### Extent to MultiGPU
 
-Then scale to multiple GPUs, the workflow is almost as similar as CPU and only different is that each worker needs to set GPU ID explicitly and then run previous CUDA accelerated code. In other words, users still are able to access the same CUDA codes that they usually use (almost) without any change!  In our implementation, we adopt the strategy of a consistent one-to-one match between CPU worker with GPU by setting GPU index as below. \[code language="C"\] // for multiple GPU case cudaSetDevice(gpuID); \[/code\]
+Then scale to multiple GPUs, the workflow is almost as similar as CPU and only different is that each worker needs to set GPU ID explicitly and then run previous CUDA accelerated code. In other words, users still are able to access the same CUDA codes that they usually use (almost) without any change!  In our implementation, we adopt the strategy of a consistent one-to-one match between CPU worker with GPU by setting GPU index as below.
+
+```c
+// for multiple GPU case
+cudaSetDevice(gpuID);
+```
 
 #### Performance Showcase
 

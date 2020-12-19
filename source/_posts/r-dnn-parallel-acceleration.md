@@ -50,48 +50,51 @@ Picture.1 Handwritten Digits in MNIST dataset
 
 The MNIST database contains 60,000 training images and 10,000 testing images. Each of image is represented by 28*28 points so totally  784 points. In this post, I will train the neural network with 784 points as input features and the number of 0-9 as output classes,  then compare the runtime of our R DNN code with [H2O deep learning](http://www.h2o.ai/verticals/algos/deep-learning/) implementations for 2-layers networks of the various number of hidden units (HU).
 
-\# h2o
-[library](http://inside-r.org/r-doc/base/library)(h2o)
-\# single thread
+```r
+# h2o
+library(h2o)
+# single thread
 h2o.init()
- 
- 
+ 
+ 
 train_file <- "https://h2o-public-test-data.s3.amazonaws.com/bigdata/laptop/mnist/train.csv.gz"
 test_file <- "https://h2o-public-test-data.s3.amazonaws.com/bigdata/laptop/mnist/test.csv.gz"
- 
+ 
 train <- h2o.importFile(train_file)
 test  <- h2o.importFile(test_file)
- 
-\# To see a brief summary of the data, run the following command
-[summary](http://inside-r.org/r-doc/base/summary)(train)
-[summary](http://inside-r.org/r-doc/base/summary)(test)
- 
+ 
+# To see a brief summary of the data, run the following command
+summary(train)
+summary(test)
+ 
 y <- "C785"
-x <- [setdiff](http://inside-r.org/r-doc/base/setdiff)([names](http://inside-r.org/r-doc/base/names)(train), y)
- 
-\# We encode the response column as categorical for multinomial
+x <- setdiff(names(train), y)
+ 
+# We encode the response column as categorical for multinomial
 #classification
-train\[,y\] <\- [as.factor](http://inside-r.org/r-doc/base/as.factor)(train\[,y\])
-test\[,y\]  <\- [as.factor](http://inside-r.org/r-doc/base/as.factor)(test\[,y\])
- 
-\# Train a Deep Learning model and valid
-[system.time](http://inside-r.org/r-doc/base/system.time)(
+train[,y] <- as.factor(train[,y])
+test[,y]  <- as.factor(test[,y])
+ 
+# Train a Deep Learning model and valid
+system.time(
   model_cv <- h2o.deeplearning(x = x,
                                y = y,
                                training_frame = train,
                                distribution = "multinomial",
                                activation = "Rectifier",
-                               hidden = [c](http://inside-r.org/r-doc/base/c)(32),
+                               hidden = c(32),
                                l1 = 1e-5,
                                epochs = 200)
 )
+```
 
 As I know, H2O is  the fast and most popular deep learning package in R platform implemented by Java in the backend. Thus, it will be valuable to know how much performance gap between native R code and  the mature package. As below barplot shown, the hidden units of 32, 64 and 128 are tested in 200 steps. [![Runtime.RDNN.H2O](http://www.parallelr.com/wp-content/uploads/2016/02/Runtime.RDNN_.H2O.png)](http://www.parallelr.com/wp-content/uploads/2016/02/Runtime.RDNN_.H2O.png) Obviously,  the R DNN is significantly slow than H2O, and the runtime increases with the number of hidden units quickly. For more details, we break down the R DNN runtime into each function call  by Rprof() and summaryRprof() which report out the final results including 4 parts: _total.time_, _total.pct_, _self.time_ and _self.pct_. The _self.time_ and _self.pct_ columns represent the elapsed time for each function, excluding the time from its inner called functions. The _total.time_ and _total.pct_ columns mean the total elapsed time for each function including the time spent on function calls \[[Aloysius Lim](https://www.packtpub.com/application-development/r-high-performance-programming)\]. From the profiling results, we can see the top 1 time-consuming function is **“%*%”** which represents matrix multiplications and usually people call it **GEMM** (GEneral Matrix Multiplication).  
 
-\> [Rprof](http://inside-r.org/r-doc/utils/Rprof)()
-\> mnist.model <- train.dnn(x=1:784, y=785, traindata=train, hidden=64, maxit=200, display=50)
-\> [Rprof](http://inside-r.org/r-doc/utils/Rprof)(NULL)
-\> [summaryRprof](http://inside-r.org/r-doc/utils/summaryRprof)()
+```r
+> Rprof()
+> mnist.model <- train.dnn(x=1:784, y=785, traindata=train, hidden=64, maxit=200, display=50)
+> Rprof(NULL)
+> summaryRprof()
 $by.self
                    self.time self.pct total.time total.pct
 "%*%"                1250.08    90.19    1250.08     90.19
@@ -112,7 +115,7 @@ $by.self
 "-"                     0.04     0.00       0.04      0.00
 "t"                     0.02     0.00      61.64      4.45
 "sum"                   0.02     0.00       0.02      0.00
- 
+ 
 $by.total
                    total.time total.pct self.time self.pct
 "train.dnn"           1386.00    100.00      9.74     0.70
@@ -132,6 +135,7 @@ $by.total
 "data.matrix"            1.28      0.09      0.00     0.00
 "colSums"                0.86      0.06      0.86     0.06
 "/"                      0.52      0.04      0.52     0.04
+```
 
 Parallel Acceleration
 ---------------------
@@ -153,30 +157,34 @@ Till now, it seems everything is great and we gain lots of performance increment
 
 [![DNN.runtime.breakdown.nvblas](http://www.parallelr.com/wp-content/uploads/2016/02/runtime.breakdown.nvblas.png)](http://www.parallelr.com/wp-content/uploads/2016/02/runtime.breakdown.nvblas.png) From the source code, there are several function calls of t()  to transfer matrix before multiplication; however, R has already provided the inner function \`crossprod\` and \`tcrossprod\` for this kind of operations.
 
-    \# original:  t() with matrix multiplication
-    dW2     <- [t](http://inside-r.org/r-doc/base/t)(hidden.layer) %*% dscores 
-    dhidden <- dscores %*% [t](http://inside-r.org/r-doc/base/t)(W2)
- 
-   \# Opt1: use builtin function
-   dW2     <- [crossprod](http://inside-r.org/r-doc/base/crossprod)(hidden.layer, dscores)
-   dhidden <- [tcrossprod](http://inside-r.org/r-doc/base/tcrossprod)(dscores, W2)
+```r
+# original:  t() with matrix multiplication
+dW2     <- t(hidden.layer) %*% dscores 
+dhidden <- dscores %*% t(W2)
+
+# Opt1: use builtin function
+dW2     <- crossprod(hidden.layer, dscores)
+dhidden <- tcrossprod(dscores, W2)
+```
 
 Secondly, the \`sweep()\` is performed to add the matrix with bias. Alternatively, we can combine weight and bias together and then use matrix multiplications, as below code shown. But the backside is that we have to create the new matrix for combinations of matrix and bias which increases memory pressure.
 
- \# Opt2: combine data and add 1 column for bias
- \#  extra matrix for combinations
- X1   <- [cbind](http://inside-r.org/r-doc/base/cbind)(X, [rep](http://inside-r.org/r-doc/base/rep)(1, [nrow](http://inside-r.org/r-doc/base/nrow)(X)))
- W1b1 <- [rbind](http://inside-r.org/r-doc/base/rbind)(W1, b1)
- W2b2 <- [rbind](http://inside-r.org/r-doc/base/rbind)(W2, b2)
- 
- 
- \# Opt2: remove \`sweep\` 
- #hidden.layer <- sweep(X %*% W1 ,2, b1, '+')
- hidden.layer <- X1 %*% W1b1
- 
- #score <- sweep(hidden.layer %*% W2, 2, b2, '+')
- hidden.layer1 <- [cbind](http://inside-r.org/r-doc/base/cbind)(hidden.layer, [rep](http://inside-r.org/r-doc/base/rep)(1,[nrow](http://inside-r.org/r-doc/base/nrow)(hidden.layer)))
- score <- hidden.layer1 %*% W2b2
+```r
+# Opt2: combine data and add 1 column for bias
+#  extra matrix for combinations
+X1   <- cbind(X, rep(1, nrow(X)))
+W1b1 <- rbind(W1, b1)
+W2b2 <- rbind(W2, b2)
+
+
+# Opt2: remove `sweep` 
+#hidden.layer <- sweep(X %*% W1 ,2, b1, '+')
+hidden.layer <- X1 %*% W1b1
+
+#score <- sweep(hidden.layer %*% W2, 2, b2, '+')
+hidden.layer1 <- cbind(hidden.layer, rep(1,nrow(hidden.layer)))
+score <- hidden.layer1 %*% W2b2
+```
 
 [![bias optimization](http://www.parallelr.com/wp-content/uploads/2016/03/opt2.png)](http://www.parallelr.com/wp-content/uploads/2016/03/opt2.png) Now, we profile and compare the results again with below table. We save the computation time of 't.default' and 'aperm.default' after removing 't()' and 'sweep()' functions. Totally, the performance is **DOUBLE** again! [![DNN.Optimization](http://www.parallelr.com/wp-content/uploads/2016/02/DNN.Optimization.png)](http://www.parallelr.com/wp-content/uploads/2016/02/DNN.Optimization.png)
 

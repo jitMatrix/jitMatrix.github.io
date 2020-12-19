@@ -67,7 +67,45 @@ Table 4 Software of test used
 
 ### 3.2 Performance Analysis on K40 for double precision
 
-First, let's compare the double-precision performance of each package on the Tesla series. We use nvblas performance as the baseline and compare the calculation time of three different sizes of matrix multiplications. In the testing code as below, we only counted the execution time of core API (% *%, gemm, gpuMatMult) following depth analysis. \*R code for gpuR, gmatrix, gputools and nvblas with DP calculation mode \[code language="r"\] library(gpuR) for(i in seq(1:7)) { ORDER = 256\*(2^i) A = matrix(rnorm(ORDER^2), nrow=ORDER) B = matrix(rnorm(ORDER^2), nrow=ORDER) gpuA = gpuMatrix(A, type="double") gpuB = gpuMatrix(B, type="double") cputime = system.time({gpuC = gpuA %*% gpuB})\[3\] } library(gmatrix) for(i in seq(1:7)) { ORDER = 256*(2^i) A = gmatrix(rnorm(ORDER^2),ORDER,ORDER) B = gmatrix(rnorm(ORDER^2),ORDER,ORDER) C = gmatrix(0,ORDER,ORDER) cputime = system.time({gmm(A,B,C)})\[3\] } library(gputools) for(i in seq(1:7)) { ORDER = 256*(2^i) A = matrix(rnorm(ORDER^2), nrow=ORDER) B = matrix(rnorm(ORDER^2), nrow=ORDER) cputime = system.time({C = gpuMatMult(A, B)})\[3\] } # nvblas, native code + PRE_LOADED for(i in seq(1:7)) { ORDER = 256*(2^i) A = matrix(rnorm(ORDER^2), nrow=ORDER) B = matrix(rnorm(ORDER^2), nrow=ORDER) cputime = system.time({C = A %*% B})\[3\] } \[/code\]   ![](http://www.parallelr.com/wp-content/uploads/2017/03/Figure2-R-benchmark-2-1024x557.png)
+First, let's compare the double-precision performance of each package on the Tesla series. We use nvblas performance as the baseline and compare the calculation time of three different sizes of matrix multiplications. In the testing code as below, we only counted the execution time of core API (% *%, gemm, gpuMatMult) following depth analysis. \*R code for gpuR, gmatrix, gputools and nvblas with DP calculation mode
+```r
+library(gpuR)
+for(i in seq(1:7)) {
+  ORDER = 256*(2^i)
+  A = matrix(rnorm(ORDER^2), nrow=ORDER)
+  B = matrix(rnorm(ORDER^2), nrow=ORDER)
+  gpuA = gpuMatrix(A, type="double")
+  gpuB = gpuMatrix(B, type="double")
+  cputime = system.time({gpuC = gpuA %*% gpuB})[3]
+ }
+  
+library(gmatrix)
+for(i in seq(1:7)) {
+  ORDER = 256*(2^i)
+  A = gmatrix(rnorm(ORDER^2),ORDER,ORDER)
+  B = gmatrix(rnorm(ORDER^2),ORDER,ORDER)
+  C = gmatrix(0,ORDER,ORDER)
+  cputime = system.time({gmm(A,B,C)})[3]
+}
+ 
+library(gputools)
+for(i in seq(1:7)) {
+  ORDER = 256*(2^i)
+  A = matrix(rnorm(ORDER^2), nrow=ORDER)
+  B = matrix(rnorm(ORDER^2), nrow=ORDER)
+  cputime = system.time({C = gpuMatMult(A, B)})[3]
+}
+ 
+# nvblas, native code + PRE_LOADED
+for(i in seq(1:7)) {
+  ORDER = 256*(2^i)
+  A = matrix(rnorm(ORDER^2), nrow=ORDER) 
+  B = matrix(rnorm(ORDER^2), nrow=ORDER) 
+  cputime = system.time({C = A %*% B})[3] 
+}
+```
+
+![](http://www.parallelr.com/wp-content/uploads/2017/03/Figure2-R-benchmark-2-1024x557.png)
 
 Figure 2 Performance of the software package with the size change
 
@@ -83,7 +121,33 @@ Table 6 Time overhead on GPU side at matrix size of 8192 * 8192
 
 ### 3.3 Performance Analysis on M40 for single precision
 
-Single precision is quite important for data scientists but openBLAS, nvblas, and gputools use default double-precision (DP) calculation mode of R. So, it will lack competition in some hardware such as Tesla M40 where the DP performance is only 0.2T. In this parts, we will show you how to leverage SP performance in R by gmatrix and gpuR. In the blow testing, we take openBLAS performance results as the baseline. \*R code of gmatrix and gpuR with SP calculation mode \[code language="r"\] library(gpuR) for(i in seq(1:7)) { ORDER = 256\*(2^i) A = matrix(rnorm(ORDER^2), nrow=ORDER) B = matrix(rnorm(ORDER^2), nrow=ORDER) gpuA = gpuMatrix(A, type="float") gpuB = gpuMatrix(B, type="float") cputime = system.time({gpuC = gpuA %*% gpuB})\[3\] } library(gmatrix) for(i in seq(1:7)) { ORDER = 256*(2^i) A = gmatrix(rnorm(ORDER^2),ORDER,ORDER, type="single") B = gmatrix(rnorm(ORDER^2),ORDER,ORDER, type="single") C = gmatrix(0,ORDER,ORDER, type="single") cputime = system.time({ gmm(A,B,C); h(C); })\[3\] } \[/code\] In Figure 3, gmatrix and gpuR with SP calculation model show a very good performance boost. For the 4096 matrix size, gmatrix is **18X faster** than openBLAS and **37X faster** (18.22 / 0.51) than nvblas. ![](http://www.parallelr.com/wp-content/uploads/2017/03/Figure3-R-benchmark-2-1024x634.png)
+Single precision is quite important for data scientists but openBLAS, nvblas, and gputools use default double-precision (DP) calculation mode of R. So, it will lack competition in some hardware such as Tesla M40 where the DP performance is only 0.2T. In this parts, we will show you how to leverage SP performance in R by gmatrix and gpuR. In the blow testing, we take openBLAS performance results as the baseline. \*R code of gmatrix and gpuR with SP calculation mode
+
+```r
+library(gpuR)
+for(i in seq(1:7)) {
+  ORDER = 256*(2^i)
+  A = matrix(rnorm(ORDER^2), nrow=ORDER)
+  B = matrix(rnorm(ORDER^2), nrow=ORDER)
+  gpuA = gpuMatrix(A, type="float")
+  gpuB = gpuMatrix(B, type="float")
+  cputime = system.time({gpuC = gpuA %*% gpuB})[3]
+}
+ 
+library(gmatrix)
+for(i in seq(1:7)) {
+  ORDER = 256*(2^i)
+  A = gmatrix(rnorm(ORDER^2),ORDER,ORDER, type="single")
+  B = gmatrix(rnorm(ORDER^2),ORDER,ORDER, type="single")
+  C = gmatrix(0,ORDER,ORDER, type="single")
+  cputime = system.time({
+    gmm(A,B,C);
+    h(C);
+  })[3]
+}
+```
+
+In Figure 3, gmatrix and gpuR with SP calculation model show a very good performance boost. For the 4096 matrix size, gmatrix is **18X faster** than openBLAS and **37X faster** (18.22 / 0.51) than nvblas. ![](http://www.parallelr.com/wp-content/uploads/2017/03/Figure3-R-benchmark-2-1024x634.png)
 
 Figure 3 Performance with SP mode on M40
 
@@ -97,11 +161,50 @@ Note: GEMM kernel API on M40 is magma\_lds128\_dgemm_kernel.
 
 ### 3.4 Asynchronous Mode
 
-For the advanced user, gpuR provides a set of asynchronous mode interface. By using asynchronous interfaces, the R program will immediately return to the CPU program side after calling the interface of vcl *, and the user can continue to perform other tasks on the CPU. When the user explicitly accesses and use vcl * data, if the calculation has not yet completed, R will continue to wait; if the calculation has been completed, users can directly use. Therefore, users can use concurrency of CPU and GPU to hide the communication and computing time on GPU. In Figure 4, we compared the computing time between gpuR in asynchronous mode and gmatrix in synchronous mode (gmatrix shows the best performance in synchronous mode testing). As figure 4 shown, the sync-API execution time increases as the computational task increases but async-API keep a very tiny cost for all input size because the async-API do not include any actual calculations and just returns immediately. So, in the best case, we can hide all GPU execution time with CPU computation with a very tiny overhead. \*gpuR running code with SP in asynchronous mode \[code language="r"\] library(gpuR) for(i in seq(1:7)) { ORDER = 256\*(2^i) vclA\_f = vclMatrix(A, nrow = ORDER, type="float") vclB\_f = vclMatrix(B, nrow = ORDER, type="float") cputime = system.time({vclC\_f = vclA\_f %*% vclB_f})\[3\] } \[/code\]   ![](http://www.parallelr.com/wp-content/uploads/2017/03/Figure4-R-benchmark-2-1024x690.png)
+For the advanced user, gpuR provides a set of asynchronous mode interface. By using asynchronous interfaces, the R program will immediately return to the CPU program side after calling the interface of vcl *, and the user can continue to perform other tasks on the CPU. When the user explicitly accesses and use vcl * data, if the calculation has not yet completed, R will continue to wait; if the calculation has been completed, users can directly use. Therefore, users can use concurrency of CPU and GPU to hide the communication and computing time on GPU. In Figure 4, we compared the computing time between gpuR in asynchronous mode and gmatrix in synchronous mode (gmatrix shows the best performance in synchronous mode testing). As figure 4 shown, the sync-API execution time increases as the computational task increases but async-API keep a very tiny cost for all input size because the async-API do not include any actual calculations and just returns immediately. So, in the best case, we can hide all GPU execution time with CPU computation with a very tiny overhead. \*gpuR running code with SP in asynchronous mode
+
+```r
+library(gpuR)
+ 
+for(i in seq(1:7)) {
+  ORDER = 256*(2^i)
+  vclA_f = vclMatrix(A, nrow = ORDER, type="float")
+  vclB_f = vclMatrix(B, nrow = ORDER, type="float")
+  cputime = system.time({vclC_f = vclA_f %*% vclB_f})[3]
+}
+```
+
+![](http://www.parallelr.com/wp-content/uploads/2017/03/Figure4-R-benchmark-2-1024x690.png)
 
 Figure 4. Performance comparison between gpuR in asynchronous mode and gmatrix in synchronization mode
 
 4. Conclusions and recommendations
 ==================================
 
-In this blog, we analyze the performance of the most popular GPU computing package. Each package has its own unique, but also have their own advantages and disadvantages. In practices, we need to choose according to specific needs. Based on the calculation platform, the calculation mode and the ease of use, it is recommended as follows: 1） nvblas is suitable for: • NVIDIA GPU card • Double precision calculation • Large memory consumption of the calculation, nvblas provides a very good performance and scalability; • Beginners 2） gputools is suitable for: • NVIDIA GPU card • Double precision calculation • Easy to use, and same API interface with R • Beginners 3） gmatrix is suitable for： • NVIDIA GPU card • Single/Double precision calculation • Multilevel BLAS interface（level 1，2，3） • More extension in GPU (colsum, sort) • Memory transfer optimization but the user needs to know where the memory is saved • Intermediate/Senior users  or R developers 4） gpuR is suitable for: • Single/Double precision calculation • Multilevel BLAS interface（level 1，2，3） • Heterogeneous systems work on most of the platforms such as AMD, Intel Xeon Phi, Intel GPUs • Asynchronous calculation mode, you can better hide the communication time • Intermediate/Senior users or R developers
+In this blog, we analyze the performance of the most popular GPU computing package. Each package has its own unique, but also have their own advantages and disadvantages. In practices, we need to choose according to specific needs. Based on the calculation platform, the calculation mode and the ease of use, it is recommended as follows:
+
+1) nvblas is suitable for
+- NVIDIA GPU card
+- Double precision calculation
+- Large memory consumption of the calculation, nvblas provides a very good performance and scalability
+- Beginners
+
+2) gputools is suitable for
+- NVIDIA GPU card
+- Double precision calculation
+- Easy to use, and same API interface with R
+- Beginners
+
+3) gmatrix is suitable for
+- NVIDIA GPU card
+- Single/Double precision calculation
+- Multilevel BLAS interface(level 1，2，3)
+- More extension in GPU (colsum, sort)
+- Memory transfer optimization but the user needs to know where the memory is saved
+- Intermediate/Senior users  or R developers
+4) gpuR is suitable for
+- Single/Double precision calculation
+- Multilevel BLAS interface(level 1，2，3)
+- Heterogeneous systems work on most of the platforms such as AMD, Intel Xeon Phi, Intel GPUs
+- Asynchronous calculation mode, you can better hide the communication time
+- Intermediate/Senior users or R developers
