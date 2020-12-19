@@ -5,38 +5,38 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
 <meta name="theme-color" content="#222">
 <meta name="generator" content="Hexo 5.3.0">
-  <link rel="apple-touch-icon" sizes="180x180" href="/oneXPU/images/apple-touch-icon-next.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/oneXPU/oneXPU/uploads/favicon/favicon.ico">
-  <link rel="icon" type="image/png" sizes="16x16" href="/oneXPU/oneXPU/uploads/favicon/favicon.ico">
-  <link rel="mask-icon" href="/oneXPU/images/logo.svg" color="#222">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/uploads/favicon/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/uploads/favicon/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
 
-<link rel="stylesheet" href="/oneXPU/css/main.css">
+<link rel="stylesheet" href="/css/main.css">
 
 
-<link rel="stylesheet" href="/oneXPU/lib/font-awesome/css/all.min.css">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
 
 <script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"jitmatrix.github.io","root":"/oneXPU/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+    var CONFIG = {"hostname":"jitmatrix.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
   <meta name="description" content="Objectives of ExperimentsR is more and more popular in various fields, including the high-performance analytics and computing (HPAC) fields. Nowadays, the architecture of HPC system can be classified">
 <meta property="og:type" content="article">
 <meta property="og:title" content="R benchmark for High-Performance Analytics and Computing (I):Accelerators">
-<meta property="og:url" content="https://jitmatrix.github.io/oneXPU/2016/04/15/r-hpac-benchmark-analysis/index.html">
+<meta property="og:url" content="https://jitmatrix.github.io/2016/04/15/r-hpac-benchmark-analysis/index.html">
 <meta property="og:site_name" content="ParallelR">
 <meta property="og:description" content="Objectives of ExperimentsR is more and more popular in various fields, including the high-performance analytics and computing (HPAC) fields. Nowadays, the architecture of HPC system can be classified">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="https://jitmatrix.github.io/oneXPU/uploads/2016/04/table2.png">
-<meta property="og:image" content="https://jitmatrix.github.io/oneXPU/uploads/2016/04/table3.png">
-<meta property="og:image" content="https://jitmatrix.github.io/oneXPU/uploads/2016/04/image004.png">
-<meta property="og:image" content="https://jitmatrix.github.io/oneXPU/uploads/2016/04/image005-3-1024x674.png">
-<meta property="og:image" content="https://jitmatrix.github.io/oneXPU/uploads/2016/04/image007.png">
-<meta property="og:image" content="https://jitmatrix.github.io/oneXPU/uploads/2016/04/image009-2-1024x674.png">
-<meta property="og:image" content="https://jitmatrix.github.io/oneXPU/uploads/2016/04/image008-1024x674.png">
-<meta property="og:image" content="https://jitmatrix.github.io/oneXPU/uploads/2016/04/111.png">
+<meta property="og:image" content="https://jitmatrix.github.io/uploads/2016/04/table2.png">
+<meta property="og:image" content="https://jitmatrix.github.io/uploads/2016/04/table3.png">
+<meta property="og:image" content="https://jitmatrix.github.io/uploads/2016/04/image004.png">
+<meta property="og:image" content="https://jitmatrix.github.io/uploads/2016/04/image005-3-1024x674.png">
+<meta property="og:image" content="https://jitmatrix.github.io/uploads/2016/04/image007.png">
+<meta property="og:image" content="https://jitmatrix.github.io/uploads/2016/04/image009-2-1024x674.png">
+<meta property="og:image" content="https://jitmatrix.github.io/uploads/2016/04/image008-1024x674.png">
+<meta property="og:image" content="https://jitmatrix.github.io/uploads/2016/04/111.png">
 <meta property="article:published_time" content="2016-04-15T05:10:18.000Z">
-<meta property="article:modified_time" content="2020-12-19T11:15:43.592Z">
+<meta property="article:modified_time" content="2020-12-19T11:27:21.454Z">
 <meta property="article:author" content="Patric Zhao">
 <meta property="article:tag" content="rstats">
 <meta property="article:tag" content="performance optimization">
@@ -53,9 +53,9 @@
 <meta property="article:tag" content="Xeon">
 <meta property="article:tag" content="Xeon Phi">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://jitmatrix.github.io/oneXPU/uploads/2016/04/table2.png">
+<meta name="twitter:image" content="https://jitmatrix.github.io/uploads/2016/04/table2.png">
 
-<link rel="canonical" href="https://jitmatrix.github.io/oneXPU/2016/04/15/r-hpac-benchmark-analysis/">
+<link rel="canonical" href="https://jitmatrix.github.io/2016/04/15/r-hpac-benchmark-analysis/">
 
 
 <script id="page-configurations">
@@ -117,7 +117,7 @@
 
   <div class="site-meta">
 
-    <a href="/oneXPU/" class="brand" rel="start">
+    <a href="/" class="brand" rel="start">
       <span class="logo-line-before"><i></i></span>
       <h1 class="site-title">ParallelR</h1>
       <span class="logo-line-after"><i></i></span>
@@ -138,37 +138,37 @@
   <ul id="menu" class="main-menu menu">
         <li class="menu-item menu-item-home">
 
-    <a href="/oneXPU/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
 
   </li>
         <li class="menu-item menu-item-archives">
 
-    <a href="/oneXPU/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
 
   </li>
         <li class="menu-item menu-item-opensource">
 
-    <a href="/oneXPU/opensource/" rel="section"><i class="fa fa-code fa-fw"></i>Opensource</a>
+    <a href="/opensource/" rel="section"><i class="fa fa-code fa-fw"></i>Opensource</a>
 
   </li>
         <li class="menu-item menu-item-presentation">
 
-    <a href="/oneXPU/presentation/" rel="section"><i class="fa fa-file-powerpoint fa-fw"></i>Presentation</a>
+    <a href="/presentation/" rel="section"><i class="fa fa-file-powerpoint fa-fw"></i>Presentation</a>
 
   </li>
         <li class="menu-item menu-item-tags">
 
-    <a href="/oneXPU/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
 
   </li>
         <li class="menu-item menu-item-categories">
 
-    <a href="/oneXPU/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
 
   </li>
         <li class="menu-item menu-item-about">
 
-    <a href="/oneXPU/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
 
   </li>
   </ul>
@@ -199,10 +199,10 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://jitmatrix.github.io/oneXPU/2016/04/15/r-hpac-benchmark-analysis/">
+    <link itemprop="mainEntityOfPage" href="https://jitmatrix.github.io/2016/04/15/r-hpac-benchmark-analysis/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/oneXPU/images/avatar.gif">
+      <meta itemprop="image" content="/images/avatar.gif">
       <meta itemprop="name" content="Patric Zhao">
       <meta itemprop="description" content="">
     </span>
@@ -229,7 +229,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2020-12-19 11:15:43" itemprop="dateModified" datetime="2020-12-19T11:15:43+00:00">2020-12-19</time>
+                <time title="Modified: 2020-12-19 11:27:21" itemprop="dateModified" datetime="2020-12-19T11:27:21+00:00">2020-12-19</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -237,15 +237,15 @@
               </span>
               <span class="post-meta-item-text">In</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/oneXPU/categories/Accelerators/" itemprop="url" rel="index"><span itemprop="name">Accelerators</span></a>
+                  <a href="/categories/Accelerators/" itemprop="url" rel="index"><span itemprop="name">Accelerators</span></a>
                 </span>
                   , 
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/oneXPU/categories/Accelerators/GPGPU/" itemprop="url" rel="index"><span itemprop="name">GPGPU</span></a>
+                  <a href="/categories/Accelerators/GPGPU/" itemprop="url" rel="index"><span itemprop="name">GPGPU</span></a>
                 </span>
                   , 
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/oneXPU/categories/Accelerators/GPGPU/MultiCores/" itemprop="url" rel="index"><span itemprop="name">MultiCores</span></a>
+                  <a href="/categories/Accelerators/GPGPU/MultiCores/" itemprop="url" rel="index"><span itemprop="name">MultiCores</span></a>
                 </span>
             </span>
 
@@ -281,14 +281,14 @@
 <p>14 Creation of a 500*500 Toeplitz matrix(loops)</p>
 <p>15 Escoufier’s method on a 45*45 matrix(mixed)</p>
 <p>In our benchmark, we measured the performance of R-25 benchmark on various hardware platforms, including Intel Xeon CPU processors, NVIDIA GPGPU cards and Intel Xeon Phi coprocessors. Meanwhile, R built with different BLAS libraries results in different performance, so we tested R with self-contained BLAS, OpenBLAS, Intel MKL and CUDA BLAS. <strong>Because the performance of self-contained BLAS is</strong> <strong>hugely**</strong> lower than the other BLAS library and in practice HPAC users of R always built R with high performance BLAS, the testing results running with self-contained BLAS is negligible. ** Moreover, in order to investigate the performance of functions or algorithms such as GEMM that HPC users mostly used, we explore the speed-up when varying the size of the matrices and number of elements as known as <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Scalability">scalability</a>.  </p>
-<h2 id="System-Descriptions"><a href="#System-Descriptions" class="headerlink" title="System Descriptions"></a>System Descriptions</h2><p>To evaluate the applicability of different methods for improving R performance in a HPC environment, the hardware and software of platform we used listed in the Table-2 and Table-3. <a href="/oneXPU/uploads/2016/04/table2.png"><img src="/oneXPU/uploads/2016/04/table2.png" alt="hardware configuration"></a> <a href="/oneXPU/uploads/2016/04/table3.png"><img src="/oneXPU/uploads/2016/04/table3.png" alt="software configuration"></a>  </p>
-<h2 id="Results-and-Discussions"><a href="#Results-and-Discussions" class="headerlink" title="Results and Discussions"></a>Results and Discussions</h2><h4 id="1-General-Comparisons"><a href="#1-General-Comparisons" class="headerlink" title="(1) General Comparisons"></a><em>(1) General Comparisons</em></h4><p>Fig. 1 shows the speedup of R using different BLAS libraries and different hosts. The default R running with OpenBLAS is shown in red as <strong>our baseline</strong> for comparison so that its speedup is constantly equal to one. Intel Xeon E5-2670 has eight physical cores in one chipset, so there are 16 physical cores in one server node.<a target="_blank" rel="noopener" href="https://software.intel.com/en-us/articles/parallelism-in-the-intel-math-kernel-library">Intel MKL library</a> supports the single thread mode (Sequential) or OpenMP threading mode. MKL with OpenMP threading mode defaultly uses all physical cores in one node(here is 16).Fig.1 shows the results of using Intel MKL for 1 thread and 16 threads with automatic parallel execution are shown in blue. There are five subtasks showing a significant benefit from either optimized sequential math library or the automatic parallelization with MKL including <strong>crossprod</strong> (matrix size 2800*2800), <strong>linear regression</strong>, <strong>matrix decomposition</strong>, <strong>computing inverse</strong> and <strong>determinant of a matrix</strong>. Other non-computational intensive tasks received very little performance gains from parallel execution with MKL. <a href="/oneXPU/uploads/2016/04/image004.png"><img src="/oneXPU/uploads/2016/04/image004.png" alt="Speedup compared with OpenBLAS"></a></p>
+<h2 id="System-Descriptions"><a href="#System-Descriptions" class="headerlink" title="System Descriptions"></a>System Descriptions</h2><p>To evaluate the applicability of different methods for improving R performance in a HPC environment, the hardware and software of platform we used listed in the Table-2 and Table-3. <a href="/uploads/2016/04/table2.png"><img src="/uploads/2016/04/table2.png" alt="hardware configuration"></a> <a href="/uploads/2016/04/table3.png"><img src="/uploads/2016/04/table3.png" alt="software configuration"></a>  </p>
+<h2 id="Results-and-Discussions"><a href="#Results-and-Discussions" class="headerlink" title="Results and Discussions"></a>Results and Discussions</h2><h4 id="1-General-Comparisons"><a href="#1-General-Comparisons" class="headerlink" title="(1) General Comparisons"></a><em>(1) General Comparisons</em></h4><p>Fig. 1 shows the speedup of R using different BLAS libraries and different hosts. The default R running with OpenBLAS is shown in red as <strong>our baseline</strong> for comparison so that its speedup is constantly equal to one. Intel Xeon E5-2670 has eight physical cores in one chipset, so there are 16 physical cores in one server node.<a target="_blank" rel="noopener" href="https://software.intel.com/en-us/articles/parallelism-in-the-intel-math-kernel-library">Intel MKL library</a> supports the single thread mode (Sequential) or OpenMP threading mode. MKL with OpenMP threading mode defaultly uses all physical cores in one node(here is 16).Fig.1 shows the results of using Intel MKL for 1 thread and 16 threads with automatic parallel execution are shown in blue. There are five subtasks showing a significant benefit from either optimized sequential math library or the automatic parallelization with MKL including <strong>crossprod</strong> (matrix size 2800*2800), <strong>linear regression</strong>, <strong>matrix decomposition</strong>, <strong>computing inverse</strong> and <strong>determinant of a matrix</strong>. Other non-computational intensive tasks received very little performance gains from parallel execution with MKL. <a href="/uploads/2016/04/image004.png"><img src="/uploads/2016/04/image004.png" alt="Speedup compared with OpenBLAS"></a></p>
 <p>Fig.1 Performance comparison among  Intel MKL and NVIDIA BLAS against R+OpenBLAS</p>
 <p>We also exploited parallelism with CUDA BLAS (libnvblas.so) on NVIDIA GPU platform. Since drop-in library (nvblas) only accelerated the level 3 BLAS functions and overhead of preloading, the result (green column) in Fig.2 showed little benefit and even worse performance for some computing tasks against Intel MKL accelerations.</p>
-<p><a href="/oneXPU/uploads/2016/04/image005-3.png"><img src="/oneXPU/uploads/2016/04/image005-3-1024x674.png" alt="Speedup against Xeon"></a></p>
+<p><a href="/uploads/2016/04/image005-3.png"><img src="/uploads/2016/04/image005-3-1024x674.png" alt="Speedup against Xeon"></a></p>
 <p>Fig.2 Performance comparison for CPU and GPU with NVIDIA BLAS and Intel MKL</p>
 <h4 id="2-Scalability-on-NVIDIA-GPU"><a href="#2-Scalability-on-NVIDIA-GPU" class="headerlink" title="(2) Scalability on NVIDIA GPU"></a><em>(2) Scalability on NVIDIA GPU</em></h4><p>The performance using two GPU devices (green column) is not superior to using one GPU device (blue column) , even the results of some subtasks on one GPU device gains more. Taking the function <strong>crossproduct</strong> with computing-intensive as an example is to explain the difference between one GPU device and two GPU device, as followed the Fig. 3. The advantage of the performance of the two card is gradually displayed as the size of the matrix increases. The sub-vertical axis shows the ratio of the elapsed time on two devices to one device. A ratio greater than 1 indicates that the two card performance is better than 1 cards,and the greater the ratio of the two cards, the better the performance of the card.  </p>
-<p><a href="/oneXPU/uploads/2016/04/image007.png"><img src="/oneXPU/uploads/2016/04/image007.png" alt="Scalability on GPU with R"></a>Fig.3 Scalability for 1X and 2X NVIDIA K40m GPU for ‘crossprod’ function</p>
+<p><a href="/uploads/2016/04/image007.png"><img src="/uploads/2016/04/image007.png" alt="Scalability on GPU with R"></a>Fig.3 Scalability for 1X and 2X NVIDIA K40m GPU for ‘crossprod’ function</p>
 <h4 id="3-Heterogeneous-Parallel-Models-on-Intel-Xeon-Phi-MIC"><a href="#3-Heterogeneous-Parallel-Models-on-Intel-Xeon-Phi-MIC" class="headerlink" title="(3) Heterogeneous Parallel Models on Intel Xeon Phi (MIC)"></a><em>(3) Heterogeneous Parallel Models on Intel Xeon Phi (MIC)</em></h4><p>To compare the parallelism supported by pure CPU (Intel Xeon processor) and Intel Xeon Phi  coprocessor, we conducted <strong>batch runs</strong> (  10 times for the average elapsed time) with the different matrix size of matrix production. MKL supports <a target="_blank" rel="noopener" href="https://software.intel.com/sites/default/files/11MIC42_How_to_Use_MKL_Automatic_Offload_0.pdf"><strong>automatic offload</strong></a> computation to Intel Xeon Phi card, but before using you must know , Automatic offload functions in MKL</p>
 <ul>
 <li>  Level-3 BLAS: GEMM, TRSM, TRMM, SYMM</li>
@@ -302,12 +302,12 @@
 <li>  LU: M, N&gt;8192</li>
 </ul>
 <p>Here, we use <code>**a%*%a</code>** substituted for the function `crossprod` used in R-benchmark-25.R because <code>_crossprod_</code> can not be auto-offloaded to Intel Xeon Phi.  We compared the elapsed time running on CPU+Xeon Phi with running on pure CPU. In Fig.4, the vertical axis is the ratio of running elapsed time with CPU+Xeon Phi running mode to elapsed time with pure CPU running mode. The results showed the greater size of the matrix, the better performance CPU+Xeon Phi gains. The matrix size less than 4000 could get the best performance on pure CPU.  </p>
-<p><a href="/oneXPU/uploads/2016/04/image009-2.png"><img src="/oneXPU/uploads/2016/04/image009-2-1024x674.png" alt="Heterogeneous Computing with Xeon and Xeon Phi for R"></a></p>
+<p><a href="/uploads/2016/04/image009-2.png"><img src="/uploads/2016/04/image009-2-1024x674.png" alt="Heterogeneous Computing with Xeon and Xeon Phi for R"></a></p>
 <p>Fig.4 Heterogeneous Computing with Intel Xeon and Intel Xeon Phi</p>
-<p>Fig.5  shows the 80% computation on Xeon Phi could get the best performance as the matrix size is growing, 70% computation on Xeon Phi could get the steadily better performance when the matrix size larger than 2000. <a href="/oneXPU/uploads/2016/04/image008.png"><img src="/oneXPU/uploads/2016/04/image008-1024x674.png" alt="Scalability for Xeon and Xeon Phi for R"></a></p>
+<p>Fig.5  shows the 80% computation on Xeon Phi could get the best performance as the matrix size is growing, 70% computation on Xeon Phi could get the steadily better performance when the matrix size larger than 2000. <a href="/uploads/2016/04/image008.png"><img src="/uploads/2016/04/image008-1024x674.png" alt="Scalability for Xeon and Xeon Phi for R"></a></p>
 <p>Fig.5 Different computation ratio on Intel Xeon Phi result in different performance</p>
 <h4 id="4-Comparison-NVIDIA-GPU-with-Intel-Xeon-Phi"><a href="#4-Comparison-NVIDIA-GPU-with-Intel-Xeon-Phi" class="headerlink" title="(4) Comparison NVIDIA GPU with Intel Xeon Phi"></a><em>(4) Comparison NVIDIA GPU with Intel Xeon Phi</em></h4><p>Here, we plotted the results of NVIDIA GPU and Intel Xeon Phi compared to Intel Xeon in Fig.6. In general, 80% running on Xeon Phi(2X 7110P)+Xeon CPU(2X E5-2670)  gets similar performance to 1X K40m+2X E5-2670(2X 7110P ~ 1X K40m). When the matrix size is less than 12000, GPU gets better performance than Xeon Phi. And after that, Intel Xeon Phi shows the similar performance with NVIDIA K40m. For this benchmark, it can clearly seen that NVIDIA’s Tesla GPU(2X K40m) outperforms significantly.At 16000 of matrix size, nearly 3.9x faster than the 8-core dual E5-2670(Sandy-Bridge CPU) and 2.3x faster than the 80% running on Xeon Phi. The Xeon Phi is 2.8x faster than the Sandy-Bridge.  </p>
-<p><a href="/oneXPU/uploads/2016/04/111.png"><img src="/oneXPU/uploads/2016/04/111.png" alt="Intel Xeon Phi .vs. NVIDIA GPU"></a></p>
+<p><a href="/uploads/2016/04/111.png"><img src="/uploads/2016/04/111.png" alt="Intel Xeon Phi .vs. NVIDIA GPU"></a></p>
 <p>Fig.6 Comparison NVIDIA GPU with Intel Xeon Phi</p>
 <h2 id="Conclusions"><a href="#Conclusions" class="headerlink" title="Conclusions"></a><strong>Conclusions</strong></h2><p>In this article, we tested the R-benchmark-25.R script on the different hardware platform with different BLAS libraries. From our analysis, we concluded (1) R built with  Intel MKL (either sequential or threaded) can accelerate lots of computationally intensive algorithms of HPAC and get  the best performance, such as linear regression, PCA, SVD (2) R is performed faster on GPU for matrix production (GEMM) since it’s really computational intensive algorithm and GPU has more computing cores than Intel Xeon or Xeon Phi (3) R executed in the heterogeneous platforms (CPU+GPU or CPU+MIC) can gain more performance improvements (4) R can get more benefits from multiple GPUs, especially for large GEMM operations.   In the next post, we will further investigate the benchmark performance with different R parallel packages and commercial productions of R .  </p>
 <hr>
@@ -398,20 +398,20 @@
 
       <footer class="post-footer">
           <div class="post-tags">
-              <a href="/oneXPU/tags/rstats/" rel="tag"># rstats</a>
-              <a href="/oneXPU/tags/performance-optimization/" rel="tag"># performance optimization</a>
-              <a href="/oneXPU/tags/R/" rel="tag"># R</a>
-              <a href="/oneXPU/tags/cuBLAS/" rel="tag"># cuBLAS</a>
-              <a href="/oneXPU/tags/MKL/" rel="tag"># MKL</a>
-              <a href="/oneXPU/tags/GEMM/" rel="tag"># GEMM</a>
-              <a href="/oneXPU/tags/HPC/" rel="tag"># HPC</a>
-              <a href="/oneXPU/tags/benchmark/" rel="tag"># benchmark</a>
-              <a href="/oneXPU/tags/data-analytics/" rel="tag"># data analytics</a>
-              <a href="/oneXPU/tags/HPAC/" rel="tag"># HPAC</a>
-              <a href="/oneXPU/tags/MIC/" rel="tag"># MIC</a>
-              <a href="/oneXPU/tags/mutlithreading/" rel="tag"># mutlithreading</a>
-              <a href="/oneXPU/tags/Xeon/" rel="tag"># Xeon</a>
-              <a href="/oneXPU/tags/Xeon-Phi/" rel="tag"># Xeon Phi</a>
+              <a href="/tags/rstats/" rel="tag"># rstats</a>
+              <a href="/tags/performance-optimization/" rel="tag"># performance optimization</a>
+              <a href="/tags/R/" rel="tag"># R</a>
+              <a href="/tags/cuBLAS/" rel="tag"># cuBLAS</a>
+              <a href="/tags/MKL/" rel="tag"># MKL</a>
+              <a href="/tags/GEMM/" rel="tag"># GEMM</a>
+              <a href="/tags/HPC/" rel="tag"># HPC</a>
+              <a href="/tags/benchmark/" rel="tag"># benchmark</a>
+              <a href="/tags/data-analytics/" rel="tag"># data analytics</a>
+              <a href="/tags/HPAC/" rel="tag"># HPAC</a>
+              <a href="/tags/MIC/" rel="tag"># MIC</a>
+              <a href="/tags/mutlithreading/" rel="tag"># mutlithreading</a>
+              <a href="/tags/Xeon/" rel="tag"># Xeon</a>
+              <a href="/tags/Xeon-Phi/" rel="tag"># Xeon Phi</a>
           </div>
 
         
@@ -420,11 +420,11 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/oneXPU/2016/03/08/r-dnn-parallel-acceleration/" rel="prev" title="R for Deep Learning (II): Achieve High-Performance DNN with Parallel Acceleration">
+    <a href="/2016/03/08/r-dnn-parallel-acceleration/" rel="prev" title="R for Deep Learning (II): Achieve High-Performance DNN with Parallel Acceleration">
       <i class="fa fa-chevron-left"></i> R for Deep Learning (II): Achieve High-Performance DNN with Parallel Acceleration
     </a></div>
       <div class="post-nav-item">
-    <a href="/oneXPU/2016/05/04/r-gpu-programming-for-all-with-gpur/" rel="next" title="R - GPU Programming for All with 'gpuR'">
+    <a href="/2016/05/04/r-gpu-programming-for-all-with-gpur/" rel="next" title="R - GPU Programming for All with 'gpuR'">
       R - GPU Programming for All with 'gpuR' <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
@@ -497,13 +497,13 @@
 <div class="site-state-wrap motion-element">
   <nav class="site-state">
       <div class="site-state-item site-state-categories">
-            <a href="/oneXPU/categories/">
+            <a href="/categories/">
           
         <span class="site-state-item-count">20</span>
         <span class="site-state-item-name">categories</span></a>
       </div>
       <div class="site-state-item site-state-tags">
-            <a href="/oneXPU/tags/">
+            <a href="/tags/">
           
         <span class="site-state-item-count">56</span>
         <span class="site-state-item-name">tags</span></a>
@@ -553,19 +553,19 @@
   </div>
 
   
-  <script src="/oneXPU/lib/anime.min.js"></script>
-  <script src="/oneXPU/lib/velocity/velocity.min.js"></script>
-  <script src="/oneXPU/lib/velocity/velocity.ui.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
 
-<script src="/oneXPU/js/utils.js"></script>
+<script src="/js/utils.js"></script>
 
-<script src="/oneXPU/js/motion.js"></script>
-
-
-<script src="/oneXPU/js/schemes/muse.js"></script>
+<script src="/js/motion.js"></script>
 
 
-<script src="/oneXPU/js/next-boot.js"></script>
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
 
 
 

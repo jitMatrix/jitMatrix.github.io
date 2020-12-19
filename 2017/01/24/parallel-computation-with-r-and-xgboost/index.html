@@ -5,33 +5,33 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
 <meta name="theme-color" content="#222">
 <meta name="generator" content="Hexo 5.3.0">
-  <link rel="apple-touch-icon" sizes="180x180" href="/oneXPU/images/apple-touch-icon-next.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/oneXPU/oneXPU/uploads/favicon/favicon.ico">
-  <link rel="icon" type="image/png" sizes="16x16" href="/oneXPU/oneXPU/uploads/favicon/favicon.ico">
-  <link rel="mask-icon" href="/oneXPU/images/logo.svg" color="#222">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/uploads/favicon/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/uploads/favicon/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
 
-<link rel="stylesheet" href="/oneXPU/css/main.css">
+<link rel="stylesheet" href="/css/main.css">
 
 
-<link rel="stylesheet" href="/oneXPU/lib/font-awesome/css/all.min.css">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
 
 <script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"jitmatrix.github.io","root":"/oneXPU/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+    var CONFIG = {"hostname":"jitmatrix.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
   <meta name="description" content="XGBoost is a comprehensive machine learning library for gradient boosting. It began from the Kaggle community for online machine learning challenges, and then maintained by the collaborative efforts f">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Parallel Computation with R and XGBoost">
-<meta property="og:url" content="https://jitmatrix.github.io/oneXPU/2017/01/24/parallel-computation-with-r-and-xgboost/index.html">
+<meta property="og:url" content="https://jitmatrix.github.io/2017/01/24/parallel-computation-with-r-and-xgboost/index.html">
 <meta property="og:site_name" content="ParallelR">
 <meta property="og:description" content="XGBoost is a comprehensive machine learning library for gradient boosting. It began from the Kaggle community for online machine learning challenges, and then maintained by the collaborative efforts f">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="https://jitmatrix.github.io/oneXPU/uploads/2016/11/xgboost-struct-1-1024x570.png">
-<meta property="og:image" content="https://jitmatrix.github.io/oneXPU/uploads/2017/01/xgboost-2.png">
-<meta property="og:image" content="https://jitmatrix.github.io/oneXPU/uploads/2016/11/SpeedFigure-1024x843.png">
+<meta property="og:image" content="https://jitmatrix.github.io/uploads/2016/11/xgboost-struct-1-1024x570.png">
+<meta property="og:image" content="https://jitmatrix.github.io/uploads/2017/01/xgboost-2.png">
+<meta property="og:image" content="https://jitmatrix.github.io/uploads/2016/11/SpeedFigure-1024x843.png">
 <meta property="article:published_time" content="2017-01-24T05:05:13.000Z">
-<meta property="article:modified_time" content="2020-12-19T11:15:43.592Z">
+<meta property="article:modified_time" content="2020-12-19T11:27:21.450Z">
 <meta property="article:author" content="Patric Zhao">
 <meta property="article:tag" content="boost">
 <meta property="article:tag" content="lightboost">
@@ -42,9 +42,9 @@
 <meta property="article:tag" content="sklearn">
 <meta property="article:tag" content="xgboost">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://jitmatrix.github.io/oneXPU/uploads/2016/11/xgboost-struct-1-1024x570.png">
+<meta name="twitter:image" content="https://jitmatrix.github.io/uploads/2016/11/xgboost-struct-1-1024x570.png">
 
-<link rel="canonical" href="https://jitmatrix.github.io/oneXPU/2017/01/24/parallel-computation-with-r-and-xgboost/">
+<link rel="canonical" href="https://jitmatrix.github.io/2017/01/24/parallel-computation-with-r-and-xgboost/">
 
 
 <script id="page-configurations">
@@ -106,7 +106,7 @@
 
   <div class="site-meta">
 
-    <a href="/oneXPU/" class="brand" rel="start">
+    <a href="/" class="brand" rel="start">
       <span class="logo-line-before"><i></i></span>
       <h1 class="site-title">ParallelR</h1>
       <span class="logo-line-after"><i></i></span>
@@ -127,37 +127,37 @@
   <ul id="menu" class="main-menu menu">
         <li class="menu-item menu-item-home">
 
-    <a href="/oneXPU/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
 
   </li>
         <li class="menu-item menu-item-archives">
 
-    <a href="/oneXPU/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
 
   </li>
         <li class="menu-item menu-item-opensource">
 
-    <a href="/oneXPU/opensource/" rel="section"><i class="fa fa-code fa-fw"></i>Opensource</a>
+    <a href="/opensource/" rel="section"><i class="fa fa-code fa-fw"></i>Opensource</a>
 
   </li>
         <li class="menu-item menu-item-presentation">
 
-    <a href="/oneXPU/presentation/" rel="section"><i class="fa fa-file-powerpoint fa-fw"></i>Presentation</a>
+    <a href="/presentation/" rel="section"><i class="fa fa-file-powerpoint fa-fw"></i>Presentation</a>
 
   </li>
         <li class="menu-item menu-item-tags">
 
-    <a href="/oneXPU/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
 
   </li>
         <li class="menu-item menu-item-categories">
 
-    <a href="/oneXPU/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
 
   </li>
         <li class="menu-item menu-item-about">
 
-    <a href="/oneXPU/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
 
   </li>
   </ul>
@@ -188,10 +188,10 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://jitmatrix.github.io/oneXPU/2017/01/24/parallel-computation-with-r-and-xgboost/">
+    <link itemprop="mainEntityOfPage" href="https://jitmatrix.github.io/2017/01/24/parallel-computation-with-r-and-xgboost/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/oneXPU/images/avatar.gif">
+      <meta itemprop="image" content="/images/avatar.gif">
       <meta itemprop="name" content="Patric Zhao">
       <meta itemprop="description" content="">
     </span>
@@ -218,7 +218,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2020-12-19 11:15:43" itemprop="dateModified" datetime="2020-12-19T11:15:43+00:00">2020-12-19</time>
+                <time title="Modified: 2020-12-19 11:27:21" itemprop="dateModified" datetime="2020-12-19T11:27:21+00:00">2020-12-19</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -226,11 +226,11 @@
               </span>
               <span class="post-meta-item-text">In</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/oneXPU/categories/General/" itemprop="url" rel="index"><span itemprop="name">General</span></a>
+                  <a href="/categories/General/" itemprop="url" rel="index"><span itemprop="name">General</span></a>
                 </span>
                   , 
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/oneXPU/categories/General/MultiCores/" itemprop="url" rel="index"><span itemprop="name">MultiCores</span></a>
+                  <a href="/categories/General/MultiCores/" itemprop="url" rel="index"><span itemprop="name">MultiCores</span></a>
                 </span>
             </span>
 
@@ -245,12 +245,12 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p><a target="_blank" rel="noopener" href="https://github.com/dmlc/xgboost">XGBoost</a> is a comprehensive machine learning library for gradient boosting. It began from the Kaggle community for online machine learning challenges, and then maintained by the collaborative efforts from the developers in the community. It is well known for its accuracy, efficiency and flexibility for various interfaces: the computational module is implemented in C++, and currently provides interfaces for R, python, Julia and Java. Its corresponding R package, <a target="_blank" rel="noopener" href="https://github.com/dmlc/xgboost/tree/master/R-package">xgboost</a>, in this sense is non-typical in terms of the design and structure. Although it is common that an R package is a wrapper of another tool, not many packages have the backend supporting many ways of parallel computation. The structure of the Project can be illustrated as follows: <img src="/oneXPU/uploads/2016/11/xgboost-struct-1-1024x570.png"> Although it is common that an R package is a wrapper of another tool, not many packages have the backend supporting many ways of parallel computation. In xgboost, most works are done in the C++ part in the above Figure. Since all interfaces share the same computational backend, there is not really a difference in terms of the accuracy or efficiency of the results from different interfaces. Users only need to prepare the data and parameters in the preferred language, then call the corresponding interface and wait for the training and prediction. This design puts most heavy works to the background, and only asks for the minimum support from each interface. For this reason, we can expect in the future there will be more languages wrapping the XGBoost backend and their users can enjoy the parallel training power. XGBoost implements a gradient boosting trees algorithm. A gradient boosting trees model trains a lot of decision trees or regression trees in a sequence, where only one tree is added to the model at a time, and every new tree depends on the previous trees. This nature limits the level of parallel computation, since we cannot build multiple trees simultaneously. Therefore, the parallel computation is introduced in a lower level, i.e. in the tree-building process at each step. <img src="/oneXPU/uploads/2017/01/xgboost-2.png"> Specifically, the parallel computation takes place in the operation where the model scans through all features on each internal node and set a threshold. Say we have a 4-core CPU for the training computation, then XGBoost separate the features into 4 groups. For the splitting operation on a node, XGBoost distributes the operation on each feature to their corresponding core. The training data is stored in a piece of shared memory, each core only needs to access one group of features, and perform the computation individually. The implementation is done in C++ with the help of OpenMP. It is obvious that users can benefit fully from the parallel computation if the number of features is larger than the number of threads of the CPU. XGBoost also supports training on a cluster, or with external memory. We will briefly introduce them in the following parts.</p>
+        <p><a target="_blank" rel="noopener" href="https://github.com/dmlc/xgboost">XGBoost</a> is a comprehensive machine learning library for gradient boosting. It began from the Kaggle community for online machine learning challenges, and then maintained by the collaborative efforts from the developers in the community. It is well known for its accuracy, efficiency and flexibility for various interfaces: the computational module is implemented in C++, and currently provides interfaces for R, python, Julia and Java. Its corresponding R package, <a target="_blank" rel="noopener" href="https://github.com/dmlc/xgboost/tree/master/R-package">xgboost</a>, in this sense is non-typical in terms of the design and structure. Although it is common that an R package is a wrapper of another tool, not many packages have the backend supporting many ways of parallel computation. The structure of the Project can be illustrated as follows: <img src="/uploads/2016/11/xgboost-struct-1-1024x570.png"> Although it is common that an R package is a wrapper of another tool, not many packages have the backend supporting many ways of parallel computation. In xgboost, most works are done in the C++ part in the above Figure. Since all interfaces share the same computational backend, there is not really a difference in terms of the accuracy or efficiency of the results from different interfaces. Users only need to prepare the data and parameters in the preferred language, then call the corresponding interface and wait for the training and prediction. This design puts most heavy works to the background, and only asks for the minimum support from each interface. For this reason, we can expect in the future there will be more languages wrapping the XGBoost backend and their users can enjoy the parallel training power. XGBoost implements a gradient boosting trees algorithm. A gradient boosting trees model trains a lot of decision trees or regression trees in a sequence, where only one tree is added to the model at a time, and every new tree depends on the previous trees. This nature limits the level of parallel computation, since we cannot build multiple trees simultaneously. Therefore, the parallel computation is introduced in a lower level, i.e. in the tree-building process at each step. <img src="/uploads/2017/01/xgboost-2.png"> Specifically, the parallel computation takes place in the operation where the model scans through all features on each internal node and set a threshold. Say we have a 4-core CPU for the training computation, then XGBoost separate the features into 4 groups. For the splitting operation on a node, XGBoost distributes the operation on each feature to their corresponding core. The training data is stored in a piece of shared memory, each core only needs to access one group of features, and perform the computation individually. The implementation is done in C++ with the help of OpenMP. It is obvious that users can benefit fully from the parallel computation if the number of features is larger than the number of threads of the CPU. XGBoost also supports training on a cluster, or with external memory. We will briefly introduce them in the following parts.</p>
 <hr>
 <p>In the following part, we will demonstrate the performance of the R package with different parallel strategies. We hope this introduction can be an example of a computational efficient R package.</p>
 <h2 id="1-Multi-threading-on-a-single-machine"><a href="#1-Multi-threading-on-a-single-machine" class="headerlink" title="1. Multi-threading on a single machine"></a><strong>1. Multi-threading on a single machine</strong></h2><p>XGBoost offers the option to parallel the training process in an implicit style on a single machine, which could be a workstation or even your own laptop. This is one of the reasons that the Kaggle community loves it. In R, the switch of multi-threading computation is just a parameter nthread:</p>
 <figure class="highlight r"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">require(xgboost)</span><br><span class="line">x = matrix(rnorm(<span class="number">100</span>*<span class="number">10000</span>), <span class="number">10000</span>, <span class="number">100</span>)</span><br><span class="line">y = x %*% rnorm(<span class="number">100</span>) + rnorm(<span class="number">1000</span>)</span><br><span class="line"></span><br><span class="line">system.time(&#123;</span><br><span class="line">  bst = xgboost(data = x, label = y, nthread = <span class="number">1</span>, nround = <span class="number">100</span>, verbose = <span class="literal">FALSE</span>)</span><br><span class="line">&#125;)</span><br><span class="line"><span class="comment"># ser system elapsed</span></span><br><span class="line"><span class="comment"># 10.98 0.05 11.06</span></span><br><span class="line"></span><br><span class="line">system.time(&#123;</span><br><span class="line">  bst = xgboost(data = x, label = y, nthread = <span class="number">4</span>, nround = <span class="number">100</span>, verbose = <span class="literal">FALSE</span>)</span><br><span class="line">&#125;)</span><br><span class="line"><span class="comment"># user system elapsed</span></span><br><span class="line"><span class="comment"># 20.80 0.67 3.37</span></span><br></pre></td></tr></table></figure>
-<p>In the results from the toy example, there is a noticeable difference between the one-thread and four-thread trainings. As a comparison, we made the following figure from a competition data(<a target="_blank" rel="noopener" href="https://www.kaggle.com/c/higgs-boson/data">https://www.kaggle.com/c/higgs-boson/data</a>) on Kaggle. The experiments were run on a laptop with an i7-4700m CPU. <img src="/oneXPU/uploads/2016/11/SpeedFigure-1024x843.png" alt="speedfigure"> The marks R and python are the vanilla gradient boosting machine implementation. XGBoost is the fastest when using only one thread. By employing 4 threads the process can be almost 4x faster. To reproduce the above results, one can find related scripts at:<a target="_blank" rel="noopener" href="https://github.com/dmlc/xgboost/tree/master/demo/kaggle-higgs">https://github.com/dmlc/xgboost/tree/master/demo/kaggle-higgs</a>. Note that the plot was made in 2015, thus the results may vary due to changes in the packages.</p>
+<p>In the results from the toy example, there is a noticeable difference between the one-thread and four-thread trainings. As a comparison, we made the following figure from a competition data(<a target="_blank" rel="noopener" href="https://www.kaggle.com/c/higgs-boson/data">https://www.kaggle.com/c/higgs-boson/data</a>) on Kaggle. The experiments were run on a laptop with an i7-4700m CPU. <img src="/uploads/2016/11/SpeedFigure-1024x843.png" alt="speedfigure"> The marks R and python are the vanilla gradient boosting machine implementation. XGBoost is the fastest when using only one thread. By employing 4 threads the process can be almost 4x faster. To reproduce the above results, one can find related scripts at:<a target="_blank" rel="noopener" href="https://github.com/dmlc/xgboost/tree/master/demo/kaggle-higgs">https://github.com/dmlc/xgboost/tree/master/demo/kaggle-higgs</a>. Note that the plot was made in 2015, thus the results may vary due to changes in the packages.</p>
 <h2 id="2-Parallel-on-a-Cluster"><a href="#2-Parallel-on-a-Cluster" class="headerlink" title="2. Parallel on a Cluster"></a><strong>2. Parallel on a Cluster</strong></h2><p>For some cases where the size of data is too large to fit into the memory, people may set up a cluster to parallel the training process. However, a uniformed API of multi-nodes parallel computation for different interface languages is still left to be developed. The current standard way to parallel the training is to use the C++ backend with a configuration file which manages the model parameters and then submit it to Yarn. For further information, please read the official documentation: <a target="_blank" rel="noopener" href="http://xgboost.readthedocs.io/en/latest/tutorials/aws_yarn.html">http://xgboost.readthedocs.io/en/latest/tutorials/aws_yarn.html</a>. It is also possible to distribute the computation in one’s own cluster, but there’s no documentation provided yet. One thing worth noticing is that when performing multi-node parallel computation, the data is split by the rows, thus on each node it is (almost) impossible to search for the exact best splitting point. As a result, XGBoost switches to an approximate algorithm mentioned in <a target="_blank" rel="noopener" href="http://www.kdd.org/kdd2016/papers/files/rfp0697-chenAemb.pdf">this paper</a>. Briefly speaking, the approximate algorithm creates a histogram to represent each feature based on its numerial distribution. It reduces the amount of calculation on slaves, makes the reduce step easier, and maintains the precision at the same time.</p>
 <h2 id="3-External-Memory"><a href="#3-External-Memory" class="headerlink" title="3. External Memory"></a><strong>3. External Memory</strong></h2><p>External memory is a compromise of large size of input and insufficient computational resources. The basic idea is simple: store the input data on an SSD, which is cheaper than memory and faster than HDD, and repeatedly load a chunk of data into memory to train the model partially. Comparing to the parallel training on a cluster, this strategy also uses the approximate algorithm, but is more convenient to configure and call, and is also cheaper for most users. To enable the external memory for R, we need to make sure that the compiler on your machine supports it. Usually it is fine with the latest gcc/clang. For windows users with mingw, however, is not able to try it out. The data files also need to be in the libsvm format on the disk. Files used in this demo can be downloaded at <a target="_blank" rel="noopener" href="https://github.com/dmlc/xgboost/tree/master/demo/data">https://github.com/dmlc/xgboost/tree/master/demo/data</a>. Here’s the usual way to load the data into memory with xgboost’s own data structure:</p>
 <figure class="highlight r"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">dtrain = xgb.DMatrix(<span class="string">&#x27;agaricus.txt.train&#x27;</span>)</span><br><span class="line"><span class="comment"># [15:57:38] 6513x127 matrix with 143286 entries loaded from agaricus.txt.train</span></span><br><span class="line">dtest = xgb.DMatrix(<span class="string">&#x27;agaricus.txt.test&#x27;</span>)</span><br><span class="line"><span class="comment"># [15:57:38] 1611x127 matrix with 35442 entries loaded from agaricus.txt.test</span></span><br><span class="line"></span><br><span class="line">model = xgboost(data = dtrain, nround = <span class="number">2</span>, objective = <span class="string">&quot;binary:logistic&quot;</span>)</span><br><span class="line"><span class="comment"># [1] train-error:0.000614 </span></span><br><span class="line"><span class="comment"># [2] train-error:0.001228</span></span><br></pre></td></tr></table></figure>
@@ -268,14 +268,14 @@
 
       <footer class="post-footer">
           <div class="post-tags">
-              <a href="/oneXPU/tags/boost/" rel="tag"># boost</a>
-              <a href="/oneXPU/tags/lightboost/" rel="tag"># lightboost</a>
-              <a href="/oneXPU/tags/memory-usage/" rel="tag"># memory usage</a>
-              <a href="/oneXPU/tags/multicores/" rel="tag"># multicores</a>
-              <a href="/oneXPU/tags/python/" rel="tag"># python</a>
-              <a href="/oneXPU/tags/rstats/" rel="tag"># rstats</a>
-              <a href="/oneXPU/tags/sklearn/" rel="tag"># sklearn</a>
-              <a href="/oneXPU/tags/xgboost/" rel="tag"># xgboost</a>
+              <a href="/tags/boost/" rel="tag"># boost</a>
+              <a href="/tags/lightboost/" rel="tag"># lightboost</a>
+              <a href="/tags/memory-usage/" rel="tag"># memory usage</a>
+              <a href="/tags/multicores/" rel="tag"># multicores</a>
+              <a href="/tags/python/" rel="tag"># python</a>
+              <a href="/tags/rstats/" rel="tag"># rstats</a>
+              <a href="/tags/sklearn/" rel="tag"># sklearn</a>
+              <a href="/tags/xgboost/" rel="tag"># xgboost</a>
           </div>
 
         
@@ -284,11 +284,11 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/oneXPU/2016/09/10/r-with-parallel-computing/" rel="prev" title="R with Parallel Computing from User Perspectives">
+    <a href="/2016/09/10/r-with-parallel-computing/" rel="prev" title="R with Parallel Computing from User Perspectives">
       <i class="fa fa-chevron-left"></i> R with Parallel Computing from User Perspectives
     </a></div>
       <div class="post-nav-item">
-    <a href="/oneXPU/2017/04/07/r-hpac-benchmark-analysis-gpu/" rel="next" title="R benchmark for High-Performance Analytics and Computing (II): GPU Packages">
+    <a href="/2017/04/07/r-hpac-benchmark-analysis-gpu/" rel="next" title="R benchmark for High-Performance Analytics and Computing (II): GPU Packages">
       R benchmark for High-Performance Analytics and Computing (II): GPU Packages <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
@@ -361,13 +361,13 @@
 <div class="site-state-wrap motion-element">
   <nav class="site-state">
       <div class="site-state-item site-state-categories">
-            <a href="/oneXPU/categories/">
+            <a href="/categories/">
           
         <span class="site-state-item-count">20</span>
         <span class="site-state-item-name">categories</span></a>
       </div>
       <div class="site-state-item site-state-tags">
-            <a href="/oneXPU/tags/">
+            <a href="/tags/">
           
         <span class="site-state-item-count">56</span>
         <span class="site-state-item-name">tags</span></a>
@@ -417,19 +417,19 @@
   </div>
 
   
-  <script src="/oneXPU/lib/anime.min.js"></script>
-  <script src="/oneXPU/lib/velocity/velocity.min.js"></script>
-  <script src="/oneXPU/lib/velocity/velocity.ui.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
 
-<script src="/oneXPU/js/utils.js"></script>
+<script src="/js/utils.js"></script>
 
-<script src="/oneXPU/js/motion.js"></script>
-
-
-<script src="/oneXPU/js/schemes/muse.js"></script>
+<script src="/js/motion.js"></script>
 
 
-<script src="/oneXPU/js/next-boot.js"></script>
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
 
 
 

@@ -5,41 +5,41 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
 <meta name="theme-color" content="#222">
 <meta name="generator" content="Hexo 5.3.0">
-  <link rel="apple-touch-icon" sizes="180x180" href="/oneXPU/images/apple-touch-icon-next.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/oneXPU/oneXPU/uploads/favicon/favicon.ico">
-  <link rel="icon" type="image/png" sizes="16x16" href="/oneXPU/oneXPU/uploads/favicon/favicon.ico">
-  <link rel="mask-icon" href="/oneXPU/images/logo.svg" color="#222">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/uploads/favicon/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/uploads/favicon/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
 
-<link rel="stylesheet" href="/oneXPU/css/main.css">
+<link rel="stylesheet" href="/css/main.css">
 
 
-<link rel="stylesheet" href="/oneXPU/lib/font-awesome/css/all.min.css">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
 
 <script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"jitmatrix.github.io","root":"/oneXPU/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+    var CONFIG = {"hostname":"jitmatrix.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
   <meta name="description" content="1. OverviewIn the previous post (here), we have analyzed the performance gain of R in the heterogeneous system by accelerators, including NVIDIA GPU and Intel Xeon Phi. Furthermore, GPU accelerated pa">
 <meta property="og:type" content="article">
 <meta property="og:title" content="R benchmark for High-Performance Analytics and Computing (II): GPU Packages">
-<meta property="og:url" content="https://jitmatrix.github.io/oneXPU/2017/04/07/r-hpac-benchmark-analysis-gpu/index.html">
+<meta property="og:url" content="https://jitmatrix.github.io/2017/04/07/r-hpac-benchmark-analysis-gpu/index.html">
 <meta property="og:site_name" content="ParallelR">
 <meta property="og:description" content="1. OverviewIn the previous post (here), we have analyzed the performance gain of R in the heterogeneous system by accelerators, including NVIDIA GPU and Intel Xeon Phi. Furthermore, GPU accelerated pa">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="https://jitmatrix.github.io/oneXPU/uploads/2017/03/Figure1-R-benchmark-2-1024x587.png">
-<meta property="og:image" content="https://jitmatrix.github.io/oneXPU/uploads/2017/03/Table1-R-benchmark-2-1024x362.png">
-<meta property="og:image" content="https://jitmatrix.github.io/oneXPU/uploads/2017/03/Table2-R-benchmark-2-1024x351.png">
-<meta property="og:image" content="https://jitmatrix.github.io/oneXPU/uploads/2017/03/Table3-R-benchmark-2-1024x731.png">
-<meta property="og:image" content="https://jitmatrix.github.io/oneXPU/uploads/2017/03/Table4-R-benchmark-2-1024x275.png">
-<meta property="og:image" content="https://jitmatrix.github.io/oneXPU/uploads/2017/03/Figure2-R-benchmark-2-1024x557.png">
-<meta property="og:image" content="https://jitmatrix.github.io/oneXPU/uploads/2017/03/Table5-R-benchmark-2-1024x198.png">
-<meta property="og:image" content="https://jitmatrix.github.io/oneXPU/uploads/2017/03/Table6-R-benchmark-2-1024x277.png">
-<meta property="og:image" content="https://jitmatrix.github.io/oneXPU/uploads/2017/03/Figure3-R-benchmark-2-1024x634.png">
-<meta property="og:image" content="https://jitmatrix.github.io/oneXPU/uploads/2017/03/Table7-R-benchmark-2-1024x274.png">
-<meta property="og:image" content="https://jitmatrix.github.io/oneXPU/uploads/2017/03/Figure4-R-benchmark-2-1024x690.png">
+<meta property="og:image" content="https://jitmatrix.github.io/uploads/2017/03/Figure1-R-benchmark-2-1024x587.png">
+<meta property="og:image" content="https://jitmatrix.github.io/uploads/2017/03/Table1-R-benchmark-2-1024x362.png">
+<meta property="og:image" content="https://jitmatrix.github.io/uploads/2017/03/Table2-R-benchmark-2-1024x351.png">
+<meta property="og:image" content="https://jitmatrix.github.io/uploads/2017/03/Table3-R-benchmark-2-1024x731.png">
+<meta property="og:image" content="https://jitmatrix.github.io/uploads/2017/03/Table4-R-benchmark-2-1024x275.png">
+<meta property="og:image" content="https://jitmatrix.github.io/uploads/2017/03/Figure2-R-benchmark-2-1024x557.png">
+<meta property="og:image" content="https://jitmatrix.github.io/uploads/2017/03/Table5-R-benchmark-2-1024x198.png">
+<meta property="og:image" content="https://jitmatrix.github.io/uploads/2017/03/Table6-R-benchmark-2-1024x277.png">
+<meta property="og:image" content="https://jitmatrix.github.io/uploads/2017/03/Figure3-R-benchmark-2-1024x634.png">
+<meta property="og:image" content="https://jitmatrix.github.io/uploads/2017/03/Table7-R-benchmark-2-1024x274.png">
+<meta property="og:image" content="https://jitmatrix.github.io/uploads/2017/03/Figure4-R-benchmark-2-1024x690.png">
 <meta property="article:published_time" content="2017-04-07T12:38:10.000Z">
-<meta property="article:modified_time" content="2020-12-19T11:15:43.592Z">
+<meta property="article:modified_time" content="2020-12-19T11:27:21.450Z">
 <meta property="article:author" content="Patric Zhao">
 <meta property="article:tag" content="rstats">
 <meta property="article:tag" content="R">
@@ -51,9 +51,9 @@
 <meta property="article:tag" content="gputools">
 <meta property="article:tag" content="nvblas">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://jitmatrix.github.io/oneXPU/uploads/2017/03/Figure1-R-benchmark-2-1024x587.png">
+<meta name="twitter:image" content="https://jitmatrix.github.io/uploads/2017/03/Figure1-R-benchmark-2-1024x587.png">
 
-<link rel="canonical" href="https://jitmatrix.github.io/oneXPU/2017/04/07/r-hpac-benchmark-analysis-gpu/">
+<link rel="canonical" href="https://jitmatrix.github.io/2017/04/07/r-hpac-benchmark-analysis-gpu/">
 
 
 <script id="page-configurations">
@@ -115,7 +115,7 @@
 
   <div class="site-meta">
 
-    <a href="/oneXPU/" class="brand" rel="start">
+    <a href="/" class="brand" rel="start">
       <span class="logo-line-before"><i></i></span>
       <h1 class="site-title">ParallelR</h1>
       <span class="logo-line-after"><i></i></span>
@@ -136,37 +136,37 @@
   <ul id="menu" class="main-menu menu">
         <li class="menu-item menu-item-home">
 
-    <a href="/oneXPU/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
 
   </li>
         <li class="menu-item menu-item-archives">
 
-    <a href="/oneXPU/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
 
   </li>
         <li class="menu-item menu-item-opensource">
 
-    <a href="/oneXPU/opensource/" rel="section"><i class="fa fa-code fa-fw"></i>Opensource</a>
+    <a href="/opensource/" rel="section"><i class="fa fa-code fa-fw"></i>Opensource</a>
 
   </li>
         <li class="menu-item menu-item-presentation">
 
-    <a href="/oneXPU/presentation/" rel="section"><i class="fa fa-file-powerpoint fa-fw"></i>Presentation</a>
+    <a href="/presentation/" rel="section"><i class="fa fa-file-powerpoint fa-fw"></i>Presentation</a>
 
   </li>
         <li class="menu-item menu-item-tags">
 
-    <a href="/oneXPU/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
 
   </li>
         <li class="menu-item menu-item-categories">
 
-    <a href="/oneXPU/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
 
   </li>
         <li class="menu-item menu-item-about">
 
-    <a href="/oneXPU/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
 
   </li>
   </ul>
@@ -197,10 +197,10 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://jitmatrix.github.io/oneXPU/2017/04/07/r-hpac-benchmark-analysis-gpu/">
+    <link itemprop="mainEntityOfPage" href="https://jitmatrix.github.io/2017/04/07/r-hpac-benchmark-analysis-gpu/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/oneXPU/images/avatar.gif">
+      <meta itemprop="image" content="/images/avatar.gif">
       <meta itemprop="name" content="Patric Zhao">
       <meta itemprop="description" content="">
     </span>
@@ -227,7 +227,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2020-12-19 11:15:43" itemprop="dateModified" datetime="2020-12-19T11:15:43+00:00">2020-12-19</time>
+                <time title="Modified: 2020-12-19 11:27:21" itemprop="dateModified" datetime="2020-12-19T11:27:21+00:00">2020-12-19</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -235,11 +235,11 @@
               </span>
               <span class="post-meta-item-text">In</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/oneXPU/categories/GPGPU/" itemprop="url" rel="index"><span itemprop="name">GPGPU</span></a>
+                  <a href="/categories/GPGPU/" itemprop="url" rel="index"><span itemprop="name">GPGPU</span></a>
                 </span>
                   , 
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/oneXPU/categories/GPGPU/Intel-Xeon-Phi/" itemprop="url" rel="index"><span itemprop="name">Intel Xeon Phi</span></a>
+                  <a href="/categories/GPGPU/Intel-Xeon-Phi/" itemprop="url" rel="index"><span itemprop="name">Intel Xeon Phi</span></a>
                 </span>
             </span>
 
@@ -254,41 +254,41 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h1 id="1-Overview"><a href="#1-Overview" class="headerlink" title="1. Overview"></a>1. Overview</h1><p>In the previous post (<a target="_blank" rel="noopener" href="http://www.parallelr.com/r-hpac-benchmark-analysis/">here</a>), we have analyzed the performance gain of R in the heterogeneous system by accelerators, including NVIDIA GPU and Intel Xeon Phi. Furthermore, GPU accelerated packages can greatly improve the performance of R. Figure 1 shows the download statistics of CRAN over the years. Obviously, GPU is more and more recognized by the R community. <img src="/oneXPU/uploads/2017/03/Figure1-R-benchmark-2-1024x587.png"></p>
+        <h1 id="1-Overview"><a href="#1-Overview" class="headerlink" title="1. Overview"></a>1. Overview</h1><p>In the previous post (<a target="_blank" rel="noopener" href="http://www.parallelr.com/r-hpac-benchmark-analysis/">here</a>), we have analyzed the performance gain of R in the heterogeneous system by accelerators, including NVIDIA GPU and Intel Xeon Phi. Furthermore, GPU accelerated packages can greatly improve the performance of R. Figure 1 shows the download statistics of CRAN over the years. Obviously, GPU is more and more recognized by the R community. <img src="/uploads/2017/03/Figure1-R-benchmark-2-1024x587.png"></p>
 <p>Figure 1 Download statistics of CRAN Package applied to the GPGPU environment over the years</p>
 <h1 id="2-GPU-accelerated-packages"><a href="#2-GPU-accelerated-packages" class="headerlink" title="2. GPU-accelerated packages"></a>2. GPU-accelerated packages</h1><p>Matrix operation (BLAS) is one of the most important operations in data analysis, such as co-matrices in recommended systems and convolution calculations in deep learning. The matrix and the vector multiplication and other standard operations in R can be accelerated by GPU significantly. The most simple way to use GPU in R is through the nvBLAS (cuBLAS) library provided by NVIDIA, but other GPU accelerated packages (gputools, gmatrix, gpuR) provides a richer software and hardware interface, as shown in Table 1.</p>
 <p>Table 1 Function comparison of the R package supported for GPGPU</p>
-<p><img src="/oneXPU/uploads/2017/03/Table1-R-benchmark-2-1024x362.png"></p>
+<p><img src="/uploads/2017/03/Table1-R-benchmark-2-1024x362.png"></p>
 <h3 id="2-1-Data-type"><a href="#2-1-Data-type" class="headerlink" title="2.1 Data type"></a>2.1 Data type</h3><p>Double-precision (DP) is used in nvBLAS and gputools to align with the default double precision mode of R. On the other hand, gmatrix and GPU can be more flexible for the user to choice single-precision (SP) or double-precision (DP) in the computations. And even gmatrix can support integer matrix computing. The SP computation mode can significant leverage the capability in low-mid level NVIDIA GPU cards, such as Tesla M40 and Geforce series GPUs, where the main computing power from SP floating-point operations. Therefore, this is a good news common desktop GPU users.</p>
 <h3 id="2-2-Data-transfer"><a href="#2-2-Data-transfer" class="headerlink" title="2.2 Data transfer"></a>2.2 Data transfer</h3><p>When using the GPU as a coprocessor to speed up the application, the cost of data transfer usually takes a significant portion of the time, and the size of the GPU’s built-in memory will also limit whether the application can be executed. One of the main advantages of nvBLAS is that it supports block-based data copy and calculations between CPU and GPU, so the memory required from R code can be large than built-in GPU memory. However, the host-to-device memory copy, the calculation, and the final device-to-host results are performed in a synchronized mode so that the user cannot isolate the data transfer and calculation in nvBLAS. gmatrix and gpuR provide the asynchronous mode of communication and calculation, the user can separate the data copy and the real calculation. For example, gpuR provided in the vcl * series API, it will return in the R console immediately and then R will execute the next CPU command, while GPU is computing. In this way, both CPU and GPU are working simultaneously. And we can get much more performance boost.</p>
 <h3 id="2-3-Programming-model"><a href="#2-3-Programming-model" class="headerlink" title="2.3 Programming model"></a>2.3 Programming model</h3><p>Frist, nvBLAS, gmatrix are based on the CUDA programming model and it will show better performance in NVIDIA series of GPUs but the shortage is poor portability. Then, gpuR is based on OpenCL, a standard heterogeneous programming interface, and more flexible. The user program of OpenCL can be executed on much more platforms, such as CPU, GPGPU, Intel Xeon Phi and FPGA.</p>
 <h1 id="3-Performance-Benchmark-and-Analysis"><a href="#3-Performance-Benchmark-and-Analysis" class="headerlink" title="3. Performance Benchmark and Analysis"></a>3. Performance Benchmark and Analysis</h1><h3 id="3-1-Test-environment"><a href="#3-1-Test-environment" class="headerlink" title="3.1 Test environment"></a>3.1 Test environment</h3><p>The test is performed on the Ali cloud HPC platform: G2 server with NVIDIA Tesla K40m, G4 server with Tesla M40. Ali cloud HPC provides independent physical server + GPU accelerator card without virtualization overhead for computing-intensive applications. Regarding GPU equipment, K40m is designed with Kepler architecture while M40 with Maxwell architecture. The M40 targets for deep learning markets especially for training. Its SP floating-point peak performance reaches 7TFlops, but DP is only 0.2TFlops.</p>
 <p>Table 2 Ali cloud hardware platform configuration</p>
-<p><img src="/oneXPU/uploads/2017/03/Table2-R-benchmark-2-1024x351.png"></p>
+<p><img src="/uploads/2017/03/Table2-R-benchmark-2-1024x351.png"></p>
 <p>Table 3 List of M40 and K40m hardware parameters</p>
-<p><img src="/oneXPU/uploads/2017/03/Table3-R-benchmark-2-1024x731.png"></p>
+<p><img src="/uploads/2017/03/Table3-R-benchmark-2-1024x731.png"></p>
 <p>Table 4 Software of test used</p>
-<p><img src="/oneXPU/uploads/2017/03/Table4-R-benchmark-2-1024x275.png"></p>
+<p><img src="/uploads/2017/03/Table4-R-benchmark-2-1024x275.png"></p>
 <h3 id="3-2-Performance-Analysis-on-K40-for-double-precision"><a href="#3-2-Performance-Analysis-on-K40-for-double-precision" class="headerlink" title="3.2 Performance Analysis on K40 for double precision"></a>3.2 Performance Analysis on K40 for double precision</h3><p>First, let’s compare the double-precision performance of each package on the Tesla series. We use nvblas performance as the baseline and compare the calculation time of three different sizes of matrix multiplications. In the testing code as below, we only counted the execution time of core API (% <em>%, gemm, gpuMatMult) following depth analysis. \</em>R code for gpuR, gmatrix, gputools and nvblas with DP calculation mode</p>
 <figure class="highlight r"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">library(gpuR)</span><br><span class="line"><span class="keyword">for</span>(i <span class="keyword">in</span> seq(<span class="number">1</span>:<span class="number">7</span>)) &#123;</span><br><span class="line">  ORDER = <span class="number">256</span>*(<span class="number">2</span>^i)</span><br><span class="line">  A = matrix(rnorm(ORDER^<span class="number">2</span>), nrow=ORDER)</span><br><span class="line">  B = matrix(rnorm(ORDER^<span class="number">2</span>), nrow=ORDER)</span><br><span class="line">  gpuA = gpuMatrix(A, type=<span class="string">&quot;double&quot;</span>)</span><br><span class="line">  gpuB = gpuMatrix(B, type=<span class="string">&quot;double&quot;</span>)</span><br><span class="line">  cputime = system.time(&#123;gpuC = gpuA %*% gpuB&#125;)[<span class="number">3</span>]</span><br><span class="line"> &#125;</span><br><span class="line">  </span><br><span class="line">library(gmatrix)</span><br><span class="line"><span class="keyword">for</span>(i <span class="keyword">in</span> seq(<span class="number">1</span>:<span class="number">7</span>)) &#123;</span><br><span class="line">  ORDER = <span class="number">256</span>*(<span class="number">2</span>^i)</span><br><span class="line">  A = gmatrix(rnorm(ORDER^<span class="number">2</span>),ORDER,ORDER)</span><br><span class="line">  B = gmatrix(rnorm(ORDER^<span class="number">2</span>),ORDER,ORDER)</span><br><span class="line">  C = gmatrix(<span class="number">0</span>,ORDER,ORDER)</span><br><span class="line">  cputime = system.time(&#123;gmm(A,B,C)&#125;)[<span class="number">3</span>]</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line">library(gputools)</span><br><span class="line"><span class="keyword">for</span>(i <span class="keyword">in</span> seq(<span class="number">1</span>:<span class="number">7</span>)) &#123;</span><br><span class="line">  ORDER = <span class="number">256</span>*(<span class="number">2</span>^i)</span><br><span class="line">  A = matrix(rnorm(ORDER^<span class="number">2</span>), nrow=ORDER)</span><br><span class="line">  B = matrix(rnorm(ORDER^<span class="number">2</span>), nrow=ORDER)</span><br><span class="line">  cputime = system.time(&#123;C = gpuMatMult(A, B)&#125;)[<span class="number">3</span>]</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="comment"># nvblas, native code + PRE_LOADED</span></span><br><span class="line"><span class="keyword">for</span>(i <span class="keyword">in</span> seq(<span class="number">1</span>:<span class="number">7</span>)) &#123;</span><br><span class="line">  ORDER = <span class="number">256</span>*(<span class="number">2</span>^i)</span><br><span class="line">  A = matrix(rnorm(ORDER^<span class="number">2</span>), nrow=ORDER) </span><br><span class="line">  B = matrix(rnorm(ORDER^<span class="number">2</span>), nrow=ORDER) </span><br><span class="line">  cputime = system.time(&#123;C = A %*% B&#125;)[<span class="number">3</span>] </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p><img src="/oneXPU/uploads/2017/03/Figure2-R-benchmark-2-1024x557.png"></p>
+<p><img src="/uploads/2017/03/Figure2-R-benchmark-2-1024x557.png"></p>
 <p>Figure 2 Performance of the software package with the size change</p>
 <p>In general, nvblas, gputools and gmatrix show very similar performance, because they use cuBLAS as the backend. gpuR’s performance is relatively low and variety with input sizes, such as the 4096 matrix only achieves 20% of nvblas performance but 8192 matrices can reach ~70%. From computation pattern, gputools and gmatrix apply dgemm_sm_heavy_ldg_nn API interfaces of cuBLAS to complete the matrix calculations, and computational efficiency will be slightly higher than nvblas of the block matrix calculation mode. From memory usage, as Figure 2, nvblas is the only one able to complete the large memory (out of cores/memory) calculation. For the largest matrix 32768, GPU packages (gputools, gmatrix, gpuR) will throw an exception of memory overflow. More details In Table 5, input matrix are divided into many small pieces, and then are transmitted to the GPU for computations by nvblas.</p>
 <p>Table 5. Analysis of memory copy times from nvprof</p>
-<p><img src="/oneXPU/uploads/2017/03/Table5-R-benchmark-2-1024x198.png"> For gmatrix, matrix (A, B, C for C = A*B) are copied to GPU and C matrix stored in the GPU side after the calculation, involving three times host-to-device data transfer and without device-to-host transfer. For gputools matrix (A, B) are copied to GPU, the result matrix ( C ) is copied back to the host side so totally twice host-to-device and once device-to-host data transfer. Because the host-to-device data transfer is faster than device-to-host, gmatrix could get better performance than gputools as table 6 shown. Finally, we take a look at gpuR performance. The matrix calculation leverages OpenCL API that the performance is less optimized on NVIDIA GPU in table 6. GEMM compute kernel _prod_TT is much slower than gputools and gmatrix. Take 8192 for example, the calculation time of cublas API is 911.4 ms and 912.3 ms for gputools and gmatrix while OpenCL is 2172.5 ms for gpuR.</p>
+<p><img src="/uploads/2017/03/Table5-R-benchmark-2-1024x198.png"> For gmatrix, matrix (A, B, C for C = A*B) are copied to GPU and C matrix stored in the GPU side after the calculation, involving three times host-to-device data transfer and without device-to-host transfer. For gputools matrix (A, B) are copied to GPU, the result matrix ( C ) is copied back to the host side so totally twice host-to-device and once device-to-host data transfer. Because the host-to-device data transfer is faster than device-to-host, gmatrix could get better performance than gputools as table 6 shown. Finally, we take a look at gpuR performance. The matrix calculation leverages OpenCL API that the performance is less optimized on NVIDIA GPU in table 6. GEMM compute kernel _prod_TT is much slower than gputools and gmatrix. Take 8192 for example, the calculation time of cublas API is 911.4 ms and 912.3 ms for gputools and gmatrix while OpenCL is 2172.5 ms for gpuR.</p>
 <p>Table 6 Time overhead on GPU side at matrix size of 8192 * 8192</p>
-<p><img src="/oneXPU/uploads/2017/03/Table6-R-benchmark-2-1024x277.png"></p>
+<p><img src="/uploads/2017/03/Table6-R-benchmark-2-1024x277.png"></p>
 <h3 id="3-3-Performance-Analysis-on-M40-for-single-precision"><a href="#3-3-Performance-Analysis-on-M40-for-single-precision" class="headerlink" title="3.3 Performance Analysis on M40 for single precision"></a>3.3 Performance Analysis on M40 for single precision</h3><p>Single precision is quite important for data scientists but openBLAS, nvblas, and gputools use default double-precision (DP) calculation mode of R. So, it will lack competition in some hardware such as Tesla M40 where the DP performance is only 0.2T. In this parts, we will show you how to leverage SP performance in R by gmatrix and gpuR. In the blow testing, we take openBLAS performance results as the baseline. *R code of gmatrix and gpuR with SP calculation mode</p>
 <figure class="highlight r"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">library(gpuR)</span><br><span class="line"><span class="keyword">for</span>(i <span class="keyword">in</span> seq(<span class="number">1</span>:<span class="number">7</span>)) &#123;</span><br><span class="line">  ORDER = <span class="number">256</span>*(<span class="number">2</span>^i)</span><br><span class="line">  A = matrix(rnorm(ORDER^<span class="number">2</span>), nrow=ORDER)</span><br><span class="line">  B = matrix(rnorm(ORDER^<span class="number">2</span>), nrow=ORDER)</span><br><span class="line">  gpuA = gpuMatrix(A, type=<span class="string">&quot;float&quot;</span>)</span><br><span class="line">  gpuB = gpuMatrix(B, type=<span class="string">&quot;float&quot;</span>)</span><br><span class="line">  cputime = system.time(&#123;gpuC = gpuA %*% gpuB&#125;)[<span class="number">3</span>]</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line">library(gmatrix)</span><br><span class="line"><span class="keyword">for</span>(i <span class="keyword">in</span> seq(<span class="number">1</span>:<span class="number">7</span>)) &#123;</span><br><span class="line">  ORDER = <span class="number">256</span>*(<span class="number">2</span>^i)</span><br><span class="line">  A = gmatrix(rnorm(ORDER^<span class="number">2</span>),ORDER,ORDER, type=<span class="string">&quot;single&quot;</span>)</span><br><span class="line">  B = gmatrix(rnorm(ORDER^<span class="number">2</span>),ORDER,ORDER, type=<span class="string">&quot;single&quot;</span>)</span><br><span class="line">  C = gmatrix(<span class="number">0</span>,ORDER,ORDER, type=<span class="string">&quot;single&quot;</span>)</span><br><span class="line">  cputime = system.time(&#123;</span><br><span class="line">    gmm(A,B,C);</span><br><span class="line">    h(C);</span><br><span class="line">  &#125;)[<span class="number">3</span>]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>In Figure 3, gmatrix and gpuR with SP calculation model show a very good performance boost. For the 4096 matrix size, gmatrix is <strong>18X faster</strong> than openBLAS and <strong>37X faster</strong> (18.22 / 0.51) than nvblas. <img src="/oneXPU/uploads/2017/03/Figure3-R-benchmark-2-1024x634.png"></p>
+<p>In Figure 3, gmatrix and gpuR with SP calculation model show a very good performance boost. For the 4096 matrix size, gmatrix is <strong>18X faster</strong> than openBLAS and <strong>37X faster</strong> (18.22 / 0.51) than nvblas. <img src="/uploads/2017/03/Figure3-R-benchmark-2-1024x634.png"></p>
 <p>Figure 3 Performance with SP mode on M40</p>
 <p>More details in Table 7, it is obvious that the computation time of SP is much less than the calculation time of DP. The calculation time of DP is about 6000 ms (nvblas, gputools), while the calculation time of SP is only about 200 ms (gmatrix) and 500 ms (gpuR). From the memory point of view, gpuR on CPU uses SP data type and gmatrix on CPU is still DP. From Table 7, we can see that memory transfer time of gputools and gmatrix is almost same, and gpuR memory transfer time is only half of it (gmatrix 153.4 ms .vs. gpuR 77.7 ms). So, gpuR are more efficient in memory usage for SP and will good for the small size of computations. <em>Note, gmatrix does not use MEM D2H by default. In order to compare memory transfer performance with other packages, H (C) is added into the source code to make a consistent comparison.</em></p>
 <p>Table 7 SP/DP performance of each Package on the M40 with matrix size of 8192*8192</p>
-<p><img src="/oneXPU/uploads/2017/03/Table7-R-benchmark-2-1024x274.png"></p>
+<p><img src="/uploads/2017/03/Table7-R-benchmark-2-1024x274.png"></p>
 <p>Note: GEMM kernel API on M40 is magma_lds128_dgemm_kernel.</p>
 <h3 id="3-4-Asynchronous-Mode"><a href="#3-4-Asynchronous-Mode" class="headerlink" title="3.4 Asynchronous Mode"></a>3.4 Asynchronous Mode</h3><p>For the advanced user, gpuR provides a set of asynchronous mode interface. By using asynchronous interfaces, the R program will immediately return to the CPU program side after calling the interface of vcl *, and the user can continue to perform other tasks on the CPU. When the user explicitly accesses and use vcl * data, if the calculation has not yet completed, R will continue to wait; if the calculation has been completed, users can directly use. Therefore, users can use concurrency of CPU and GPU to hide the communication and computing time on GPU. In Figure 4, we compared the computing time between gpuR in asynchronous mode and gmatrix in synchronous mode (gmatrix shows the best performance in synchronous mode testing). As figure 4 shown, the sync-API execution time increases as the computational task increases but async-API keep a very tiny cost for all input size because the async-API do not include any actual calculations and just returns immediately. So, in the best case, we can hide all GPU execution time with CPU computation with a very tiny overhead. *gpuR running code with SP in asynchronous mode</p>
 <figure class="highlight r"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">library(gpuR)</span><br><span class="line"> </span><br><span class="line"><span class="keyword">for</span>(i <span class="keyword">in</span> seq(<span class="number">1</span>:<span class="number">7</span>)) &#123;</span><br><span class="line">  ORDER = <span class="number">256</span>*(<span class="number">2</span>^i)</span><br><span class="line">  vclA_f = vclMatrix(A, nrow = ORDER, type=<span class="string">&quot;float&quot;</span>)</span><br><span class="line">  vclB_f = vclMatrix(B, nrow = ORDER, type=<span class="string">&quot;float&quot;</span>)</span><br><span class="line">  cputime = system.time(&#123;vclC_f = vclA_f %*% vclB_f&#125;)[<span class="number">3</span>]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p><img src="/oneXPU/uploads/2017/03/Figure4-R-benchmark-2-1024x690.png"></p>
+<p><img src="/uploads/2017/03/Figure4-R-benchmark-2-1024x690.png"></p>
 <p>Figure 4. Performance comparison between gpuR in asynchronous mode and gmatrix in synchronization mode</p>
 <h1 id="4-Conclusions-and-recommendations"><a href="#4-Conclusions-and-recommendations" class="headerlink" title="4. Conclusions and recommendations"></a>4. Conclusions and recommendations</h1><p>In this blog, we analyze the performance of the most popular GPU computing package. Each package has its own unique, but also have their own advantages and disadvantages. In practices, we need to choose according to specific needs. Based on the calculation platform, the calculation mode and the ease of use, it is recommended as follows:</p>
 <ol>
@@ -339,15 +339,15 @@
 
       <footer class="post-footer">
           <div class="post-tags">
-              <a href="/oneXPU/tags/rstats/" rel="tag"># rstats</a>
-              <a href="/oneXPU/tags/R/" rel="tag"># R</a>
-              <a href="/oneXPU/tags/CUDA/" rel="tag"># CUDA</a>
-              <a href="/oneXPU/tags/cuBLAS/" rel="tag"># cuBLAS</a>
-              <a href="/oneXPU/tags/GPU/" rel="tag"># GPU</a>
-              <a href="/oneXPU/tags/gmatrix/" rel="tag"># gmatrix</a>
-              <a href="/oneXPU/tags/gpuR/" rel="tag"># gpuR</a>
-              <a href="/oneXPU/tags/gputools/" rel="tag"># gputools</a>
-              <a href="/oneXPU/tags/nvblas/" rel="tag"># nvblas</a>
+              <a href="/tags/rstats/" rel="tag"># rstats</a>
+              <a href="/tags/R/" rel="tag"># R</a>
+              <a href="/tags/CUDA/" rel="tag"># CUDA</a>
+              <a href="/tags/cuBLAS/" rel="tag"># cuBLAS</a>
+              <a href="/tags/GPU/" rel="tag"># GPU</a>
+              <a href="/tags/gmatrix/" rel="tag"># gmatrix</a>
+              <a href="/tags/gpuR/" rel="tag"># gpuR</a>
+              <a href="/tags/gputools/" rel="tag"># gputools</a>
+              <a href="/tags/nvblas/" rel="tag"># nvblas</a>
           </div>
 
         
@@ -356,7 +356,7 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/oneXPU/2017/01/24/parallel-computation-with-r-and-xgboost/" rel="prev" title="Parallel Computation with R and XGBoost">
+    <a href="/2017/01/24/parallel-computation-with-r-and-xgboost/" rel="prev" title="Parallel Computation with R and XGBoost">
       <i class="fa fa-chevron-left"></i> Parallel Computation with R and XGBoost
     </a></div>
       <div class="post-nav-item"></div>
@@ -430,13 +430,13 @@
 <div class="site-state-wrap motion-element">
   <nav class="site-state">
       <div class="site-state-item site-state-categories">
-            <a href="/oneXPU/categories/">
+            <a href="/categories/">
           
         <span class="site-state-item-count">20</span>
         <span class="site-state-item-name">categories</span></a>
       </div>
       <div class="site-state-item site-state-tags">
-            <a href="/oneXPU/tags/">
+            <a href="/tags/">
           
         <span class="site-state-item-count">56</span>
         <span class="site-state-item-name">tags</span></a>
@@ -486,19 +486,19 @@
   </div>
 
   
-  <script src="/oneXPU/lib/anime.min.js"></script>
-  <script src="/oneXPU/lib/velocity/velocity.min.js"></script>
-  <script src="/oneXPU/lib/velocity/velocity.ui.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
 
-<script src="/oneXPU/js/utils.js"></script>
+<script src="/js/utils.js"></script>
 
-<script src="/oneXPU/js/motion.js"></script>
-
-
-<script src="/oneXPU/js/schemes/muse.js"></script>
+<script src="/js/motion.js"></script>
 
 
-<script src="/oneXPU/js/next-boot.js"></script>
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
 
 
 
