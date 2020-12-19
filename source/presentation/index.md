@@ -12,5 +12,5 @@ Software developers and statistical researchers are looking to increase their sk
 ----------------------------------------------------------------------------------------------------------------------------------
 
 
-[**Unlock** **Performance Limit of DNN by CUDA (GPU) in R**](/oneXPU/slides/GTC16_PatricZhao_Unlock_DNN_Perf_CUDA.pdf)
+[**Unlock** **Performance Limit of DNN by CUDA (GPU) in R**](/oneXPU/slides/GTC16/GTC16_PatricZhao_Unlock_DNN_Perf_CUDA.pdf)
 --------------------------------------------------------------------------------------------------------------------------------------
