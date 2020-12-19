@@ -75,20 +75,20 @@ In our benchmark, we measured the performance of R-25 benchmark on various hard
 System Descriptions
 -------------------
 
-To evaluate the applicability of different methods for improving R performance in a HPC environment, the hardware and software of platform we used listed in the Table-2 and Table-3. [![hardware configuration](http://www.parallelr.com/wp-content/uploads/2016/04/table2.png)](http://www.parallelr.com/wp-content/uploads/2016/04/table2.png) [![software configuration](http://www.parallelr.com/wp-content/uploads/2016/04/table3.png)](http://www.parallelr.com/wp-content/uploads/2016/04/table3.png)  
+To evaluate the applicability of different methods for improving R performance in a HPC environment, the hardware and software of platform we used listed in the Table-2 and Table-3. [![hardware configuration](/uploads/2016/04/table2.png)](/uploads/2016/04/table2.png) [![software configuration](/uploads/2016/04/table3.png)](/uploads/2016/04/table3.png)  
 
 Results and Discussions
 -----------------------
 
 #### _(1) General Comparisons_
 
-Fig. 1 shows the speedup of R using different BLAS libraries and different hosts. The default R running with OpenBLAS is shown in red as **our baseline** for comparison so that its speedup is constantly equal to one. Intel Xeon E5-2670 has eight physical cores in one chipset, so there are 16 physical cores in one server node.[Intel MKL library](https://software.intel.com/en-us/articles/parallelism-in-the-intel-math-kernel-library) supports the single thread mode (Sequential) or OpenMP threading mode. MKL with OpenMP threading mode defaultly uses all physical cores in one node(here is 16).Fig.1 shows the results of using Intel MKL for 1 thread and 16 threads with automatic parallel execution are shown in blue. There are five subtasks showing a significant benefit from either optimized sequential math library or the automatic parallelization with MKL including **crossprod** (matrix size 2800*2800), **linear regression**, **matrix decomposition**, **computing inverse** and **determinant of a matrix**. Other non-computational intensive tasks received very little performance gains from parallel execution with MKL. [![Speedup compared with OpenBLAS](http://www.parallelr.com/wp-content/uploads/2016/04/image004.png)](http://www.parallelr.com/wp-content/uploads/2016/04/image004.png)
+Fig. 1 shows the speedup of R using different BLAS libraries and different hosts. The default R running with OpenBLAS is shown in red as **our baseline** for comparison so that its speedup is constantly equal to one. Intel Xeon E5-2670 has eight physical cores in one chipset, so there are 16 physical cores in one server node.[Intel MKL library](https://software.intel.com/en-us/articles/parallelism-in-the-intel-math-kernel-library) supports the single thread mode (Sequential) or OpenMP threading mode. MKL with OpenMP threading mode defaultly uses all physical cores in one node(here is 16).Fig.1 shows the results of using Intel MKL for 1 thread and 16 threads with automatic parallel execution are shown in blue. There are five subtasks showing a significant benefit from either optimized sequential math library or the automatic parallelization with MKL including **crossprod** (matrix size 2800*2800), **linear regression**, **matrix decomposition**, **computing inverse** and **determinant of a matrix**. Other non-computational intensive tasks received very little performance gains from parallel execution with MKL. [![Speedup compared with OpenBLAS](/uploads/2016/04/image004.png)](/uploads/2016/04/image004.png)
 
 Fig.1 Performance comparison among  Intel MKL and NVIDIA BLAS against R+OpenBLAS
 
 We also exploited parallelism with CUDA BLAS (libnvblas.so) on NVIDIA GPU platform. Since drop-in library (nvblas) only accelerated the level 3 BLAS functions and overhead of preloading, the result (green column) in Fig.2 showed little benefit and even worse performance for some computing tasks against Intel MKL accelerations.
 
-[![Speedup against Xeon](http://www.parallelr.com/wp-content/uploads/2016/04/image005-3-1024x674.png)](http://www.parallelr.com/wp-content/uploads/2016/04/image005-3.png)
+[![Speedup against Xeon](/uploads/2016/04/image005-3-1024x674.png)](/uploads/2016/04/image005-3.png)
 
 Fig.2 Performance comparison for CPU and GPU with NVIDIA BLAS and Intel MKL
 
@@ -96,7 +96,7 @@ Fig.2 Performance comparison for CPU and GPU with NVIDIA BLAS and Intel MKL
 
 The performance using two GPU devices (green column) is not superior to using one GPU device (blue column) , even the results of some subtasks on one GPU device gains more. Taking the function **crossproduct** with computing-intensive as an example is to explain the difference between one GPU device and two GPU device, as followed the Fig. 3. The advantage of the performance of the two card is gradually displayed as the size of the matrix increases. The sub-vertical axis shows the ratio of the elapsed time on two devices to one device. A ratio greater than 1 indicates that the two card performance is better than 1 cards,and the greater the ratio of the two cards, the better the performance of the card.  
 
-[![Scalability on GPU with R](http://www.parallelr.com/wp-content/uploads/2016/04/image007.png)](http://www.parallelr.com/wp-content/uploads/2016/04/image007.png)Fig.3 Scalability for 1X and 2X NVIDIA K40m GPU for ‘crossprod’ function
+[![Scalability on GPU with R](/uploads/2016/04/image007.png)](/uploads/2016/04/image007.png)Fig.3 Scalability for 1X and 2X NVIDIA K40m GPU for ‘crossprod’ function
 
 #### _(3) Heterogeneous Parallel Models on Intel Xeon Phi (MIC)_
 
@@ -114,11 +114,11 @@ Matrix size for offloading
 
 Here, we use `**a%*%a`** substituted for the function \`crossprod\` used in R-benchmark-25.R because `_crossprod_` can not be auto-offloaded to Intel Xeon Phi.  We compared the elapsed time running on CPU+Xeon Phi with running on pure CPU. In Fig.4, the vertical axis is the ratio of running elapsed time with CPU+Xeon Phi running mode to elapsed time with pure CPU running mode. The results showed the greater size of the matrix, the better performance CPU+Xeon Phi gains. The matrix size less than 4000 could get the best performance on pure CPU.  
 
-[![Heterogeneous Computing with Xeon and Xeon Phi for R](http://www.parallelr.com/wp-content/uploads/2016/04/image009-2-1024x674.png)](http://www.parallelr.com/wp-content/uploads/2016/04/image009-2.png)
+[![Heterogeneous Computing with Xeon and Xeon Phi for R](/uploads/2016/04/image009-2-1024x674.png)](/uploads/2016/04/image009-2.png)
 
 Fig.4 Heterogeneous Computing with Intel Xeon and Intel Xeon Phi
 
-Fig.5  shows the 80% computation on Xeon Phi could get the best performance as the matrix size is growing, 70% computation on Xeon Phi could get the steadily better performance when the matrix size larger than 2000. [![Scalability for Xeon and Xeon Phi for R](http://www.parallelr.com/wp-content/uploads/2016/04/image008-1024x674.png)](http://www.parallelr.com/wp-content/uploads/2016/04/image008.png)
+Fig.5  shows the 80% computation on Xeon Phi could get the best performance as the matrix size is growing, 70% computation on Xeon Phi could get the steadily better performance when the matrix size larger than 2000. [![Scalability for Xeon and Xeon Phi for R](/uploads/2016/04/image008-1024x674.png)](/uploads/2016/04/image008.png)
 
 Fig.5 Different computation ratio on Intel Xeon Phi result in different performance
 
@@ -126,7 +126,7 @@ Fig.5 Different computation ratio on Intel Xeon Phi result in different perform
 
 Here, we plotted the results of NVIDIA GPU and Intel Xeon Phi compared to Intel Xeon in Fig.6. In general, 80% running on Xeon Phi(2X 7110P)+Xeon CPU(2X E5-2670)  gets similar performance to 1X K40m+2X E5-2670(2X 7110P ~ 1X K40m). When the matrix size is less than 12000, GPU gets better performance than Xeon Phi. And after that, Intel Xeon Phi shows the similar performance with NVIDIA K40m. For this benchmark, it can clearly seen that NVIDIA's Tesla GPU(2X K40m) outperforms significantly.At 16000 of matrix size, nearly 3.9x faster than the 8-core dual E5-2670(Sandy-Bridge CPU) and 2.3x faster than the 80% running on Xeon Phi. The Xeon Phi is 2.8x faster than the Sandy-Bridge.  
 
-[![Intel Xeon Phi .vs. NVIDIA GPU](http://www.parallelr.com/wp-content/uploads/2016/04/111.png)](http://www.parallelr.com/wp-content/uploads/2016/04/111.png)
+[![Intel Xeon Phi .vs. NVIDIA GPU](/uploads/2016/04/111.png)](/uploads/2016/04/111.png)
 
 Fig.6 Comparison NVIDIA GPU with Intel Xeon Phi
 

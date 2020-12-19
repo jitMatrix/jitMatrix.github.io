@@ -37,4 +37,4 @@ ParallelR Blog is created by Peng Zhao. Peng have rich experience in heterogene
 
  
 This is Peng. Handsome, Right?
-[![](http://www.parallelr.com/wp-content/uploads/2016/02/PengZhao@ParallelR.png)](http://www.parallelr.com/wp-content/uploads/2016/02/PengZhao@ParallelR.png)
+[![](/uploads/2016/02/PengZhao@ParallelR.png)](/uploads/2016/02/PengZhao@ParallelR.png)
