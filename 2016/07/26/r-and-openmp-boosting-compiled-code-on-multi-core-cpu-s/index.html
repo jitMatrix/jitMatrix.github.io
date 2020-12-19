@@ -27,10 +27,10 @@
 <meta property="og:site_name" content="oneXPU">
 <meta property="og:description" content="IntroductionSometimes you just need more speed. And sometime plain R does not provide it. This article is about boosting your R code with C++ and openMP. OpenMP is a parallel processing framework for">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="https://jitmatrix.github.io/uploads/2016/07/timings-1-1024x585.png">
-<meta property="og:image" content="https://jitmatrix.github.io/uploads/2016/07/timings_n-2-1024x585.png">
+<meta property="og:image" content="https://jitmatrix.github.io/oneXPU/uploads/2016/07/timings-1-1024x585.png">
+<meta property="og:image" content="https://jitmatrix.github.io/oneXPU/uploads/2016/07/timings_n-2-1024x585.png">
 <meta property="article:published_time" content="2016-07-26T18:10:38.000Z">
-<meta property="article:modified_time" content="2020-12-19T09:10:38.825Z">
+<meta property="article:modified_time" content="2020-12-19T09:15:42.983Z">
 <meta property="article:author" content="Patric Zhao">
 <meta property="article:tag" content="multicores">
 <meta property="article:tag" content="rstats">
@@ -43,7 +43,7 @@
 <meta property="article:tag" content="Rcpp">
 <meta property="article:tag" content="SSE">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://jitmatrix.github.io/uploads/2016/07/timings-1-1024x585.png">
+<meta name="twitter:image" content="https://jitmatrix.github.io/oneXPU/uploads/2016/07/timings-1-1024x585.png">
 
 <link rel="canonical" href="https://jitmatrix.github.io/oneXPU/2016/07/26/r-and-openmp-boosting-compiled-code-on-multi-core-cpu-s/">
 
@@ -194,7 +194,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2020-12-19 09:10:38" itemprop="dateModified" datetime="2020-12-19T09:10:38+00:00">2020-12-19</time>
+                <time title="Modified: 2020-12-19 09:15:42" itemprop="dateModified" datetime="2020-12-19T09:15:42+00:00">2020-12-19</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -265,7 +265,7 @@
 <p>How fast is this?</p>
 <figure class="highlight r"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">system.time(m &lt;- maxLik(llcMP, start=start, nCpu=<span class="number">4</span>, x=x))</span><br><span class="line"><span class="comment"># user  system elapsed</span></span><br><span class="line"><span class="comment"># 0.732   0.016   0.203 </span></span><br></pre></td></tr></table></figure>
 <p>On 2-core/4-thread cpu, we got a more than four–fold speed boost. This is impressive, given the cpu does have 2 complete cores only. Obviously, the performance improvement depends on the task. This particular problem is embarrasingly parallel, the threads can work completely independent of each other.</p>
-<h1 id="Timing-Examples"><a href="#Timing-Examples" class="headerlink" title="Timing Examples"></a>Timing Examples</h1><p>As an extended timing example, we run all the (optimized) examples above using a Xeon-L5420 cpu with 8 cores, single thread per core. The figure below depicts the compute time for single-threaded R and C++ code, and for C++/openMP code with 8 threads, as a function of data size. <img src="/uploads/2016/07/timings-1-1024x585.png" alt="timings"> The figure reveals several facts. First, for non-parallelized code we can see that</p>
+<h1 id="Timing-Examples"><a href="#Timing-Examples" class="headerlink" title="Timing Examples"></a>Timing Examples</h1><p>As an extended timing example, we run all the (optimized) examples above using a Xeon-L5420 cpu with 8 cores, single thread per core. The figure below depicts the compute time for single-threaded R and C++ code, and for C++/openMP code with 8 threads, as a function of data size. <img src="/oneXPU/uploads/2016/07/timings-1-1024x585.png" alt="timings"> The figure reveals several facts. First, for non-parallelized code we can see that</p>
 <ol>
 <li> Optimized R and C++ code are of virtually identical speed.</li>
 <li> compute time grows linearily in data size.</li>
@@ -275,7 +275,7 @@
 <li> openMP with 8 threads is substantially slower for data size less than about 100k. For larger data, multi-threaded approach is clearly faster.</li>
 <li> openMP execution time is almost constant for data size up to 4M. For larger data vectors, it increases linearily. This suggests that for smaller data size, openMP execution time is dominated by thread creation and management overheads, not by computations.</li>
 </ol>
-<p>Finally, let’s compare the computation times for different number of threads for 8M data size. <img src="/uploads/2016/07/timings_n-2-1024x585.png" alt="timings_n"> The figure shows the run time for single threaded versions of the code (R and C), and multi-threaded openMP versions with 1 to 9 threads (OMP.1 to OMP.9).</p>
+<p>Finally, let’s compare the computation times for different number of threads for 8M data size. <img src="/oneXPU/uploads/2016/07/timings_n-2-1024x585.png" alt="timings_n"> The figure shows the run time for single threaded versions of the code (R and C), and multi-threaded openMP versions with 1 to 9 threads (OMP.1 to OMP.9).</p>
 <ol>
 <li> More cpus give us shorter execution times. 1-thread OMP will run almost 1.7 times slower than 8-threaded version (3.9 and 2.3 s respectively).</li>
 <li> The gain of more cpu cores working on the problem levels off quickly. Little noticeable gain is visible for more than 3 cores. It indicates that the calculations are only partly limited by computing-power. Another major bottleneck may be memory speed.</li>
