@@ -13,7 +13,7 @@ timezone: ''
 
 # URL
 ## If your site is put in a subdirectory, set url as 'http://yoursite.com/child' and root as '/child/'
-url: https://rajeshii.github.io/oneXPU/
+url: https://jitMatrix.github.io/oneXPU/
 root: /oneXPU/
 permalink: :year/:month/:day/:title/
 permalink_defaults:
@@ -99,7 +99,7 @@ theme: landscape
 ## Docs: https://hexo.io/docs/deployment.html
 deploy:
   type: git
-  repo: https://github.com/rajeshii/oneXPU
-  branch: master
+  repo: https://github.com/jitMatrix/oneXPU
+  branch: main
   name: Matrix
   email: xinyulux@gmail.com
