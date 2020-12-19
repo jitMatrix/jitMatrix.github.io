@@ -21,7 +21,7 @@ date: 2017-04-07 12:38:10
 1\. Overview
 ============
 
-In the previous post ([here](http://www.parallelr.com/r-hpac-benchmark-analysis/)), we have analyzed the performance gain of R in the heterogeneous system by accelerators, including NVIDIA GPU and Intel Xeon Phi. Furthermore, GPU accelerated packages can greatly improve the performance of R. Figure 1 shows the download statistics of CRAN over the years. Obviously, GPU is more and more recognized by the R community. ![](/uploads/2017/03/Figure1-R-benchmark-2-1024x587.png)
+In the previous post ([here](http://www.parallelr.com/r-hpac-benchmark-analysis/)), we have analyzed the performance gain of R in the heterogeneous system by accelerators, including NVIDIA GPU and Intel Xeon Phi. Furthermore, GPU accelerated packages can greatly improve the performance of R. Figure 1 shows the download statistics of CRAN over the years. Obviously, GPU is more and more recognized by the R community. ![](/oneXPU/uploads/2017/03/Figure1-R-benchmark-2-1024x587.png)
 
 Figure 1 Download statistics of CRAN Package applied to the GPGPU environment over the years
 
@@ -32,7 +32,7 @@ Matrix operation (BLAS) is one of the most important operations in data analysis
 
 Table 1 Function comparison of the R package supported for GPGPU
 
-![](/uploads/2017/03/Table1-R-benchmark-2-1024x362.png)
+![](/oneXPU/uploads/2017/03/Table1-R-benchmark-2-1024x362.png)
 
 ### 2.1 Data type
 
@@ -55,15 +55,15 @@ The test is performed on the Ali cloud HPC platform: G2 server with NVIDIA Tesla
 
 Table 2 Ali cloud hardware platform configuration
 
-![](/uploads/2017/03/Table2-R-benchmark-2-1024x351.png)
+![](/oneXPU/uploads/2017/03/Table2-R-benchmark-2-1024x351.png)
 
 Table 3 List of M40 and K40m hardware parameters
 
-![](/uploads/2017/03/Table3-R-benchmark-2-1024x731.png)
+![](/oneXPU/uploads/2017/03/Table3-R-benchmark-2-1024x731.png)
 
 Table 4 Software of test used
 
-![](/uploads/2017/03/Table4-R-benchmark-2-1024x275.png)
+![](/oneXPU/uploads/2017/03/Table4-R-benchmark-2-1024x275.png)
 
 ### 3.2 Performance Analysis on K40 for double precision
 
@@ -105,7 +105,7 @@ for(i in seq(1:7)) {
 }
 ```
 
-![](/uploads/2017/03/Figure2-R-benchmark-2-1024x557.png)
+![](/oneXPU/uploads/2017/03/Figure2-R-benchmark-2-1024x557.png)
 
 Figure 2 Performance of the software package with the size change
 
@@ -113,11 +113,11 @@ In general, nvblas, gputools and gmatrix show very similar performance, because 
 
 Table 5. Analysis of memory copy times from nvprof
 
-![](/uploads/2017/03/Table5-R-benchmark-2-1024x198.png) For gmatrix, matrix (A, B, C for C = A*B) are copied to GPU and C matrix stored in the GPU side after the calculation, involving three times host-to-device data transfer and without device-to-host transfer. For gputools matrix (A, B) are copied to GPU, the result matrix ( C ) is copied back to the host side so totally twice host-to-device and once device-to-host data transfer. Because the host-to-device data transfer is faster than device-to-host, gmatrix could get better performance than gputools as table 6 shown. Finally, we take a look at gpuR performance. The matrix calculation leverages OpenCL API that the performance is less optimized on NVIDIA GPU in table 6. GEMM compute kernel \_prod\_TT is much slower than gputools and gmatrix. Take 8192 for example, the calculation time of cublas API is 911.4 ms and 912.3 ms for gputools and gmatrix while OpenCL is 2172.5 ms for gpuR.
+![](/oneXPU/uploads/2017/03/Table5-R-benchmark-2-1024x198.png) For gmatrix, matrix (A, B, C for C = A*B) are copied to GPU and C matrix stored in the GPU side after the calculation, involving three times host-to-device data transfer and without device-to-host transfer. For gputools matrix (A, B) are copied to GPU, the result matrix ( C ) is copied back to the host side so totally twice host-to-device and once device-to-host data transfer. Because the host-to-device data transfer is faster than device-to-host, gmatrix could get better performance than gputools as table 6 shown. Finally, we take a look at gpuR performance. The matrix calculation leverages OpenCL API that the performance is less optimized on NVIDIA GPU in table 6. GEMM compute kernel \_prod\_TT is much slower than gputools and gmatrix. Take 8192 for example, the calculation time of cublas API is 911.4 ms and 912.3 ms for gputools and gmatrix while OpenCL is 2172.5 ms for gpuR.
 
 Table 6 Time overhead on GPU side at matrix size of 8192 * 8192
 
-![](/uploads/2017/03/Table6-R-benchmark-2-1024x277.png)
+![](/oneXPU/uploads/2017/03/Table6-R-benchmark-2-1024x277.png)
 
 ### 3.3 Performance Analysis on M40 for single precision
 
@@ -147,7 +147,7 @@ for(i in seq(1:7)) {
 }
 ```
 
-In Figure 3, gmatrix and gpuR with SP calculation model show a very good performance boost. For the 4096 matrix size, gmatrix is **18X faster** than openBLAS and **37X faster** (18.22 / 0.51) than nvblas. ![](/uploads/2017/03/Figure3-R-benchmark-2-1024x634.png)
+In Figure 3, gmatrix and gpuR with SP calculation model show a very good performance boost. For the 4096 matrix size, gmatrix is **18X faster** than openBLAS and **37X faster** (18.22 / 0.51) than nvblas. ![](/oneXPU/uploads/2017/03/Figure3-R-benchmark-2-1024x634.png)
 
 Figure 3 Performance with SP mode on M40
 
@@ -155,7 +155,7 @@ More details in Table 7, it is obvious that the computation time of SP is much l
 
 Table 7 SP/DP performance of each Package on the M40 with matrix size of 8192*8192
 
-![](/uploads/2017/03/Table7-R-benchmark-2-1024x274.png)
+![](/oneXPU/uploads/2017/03/Table7-R-benchmark-2-1024x274.png)
 
 Note: GEMM kernel API on M40 is magma\_lds128\_dgemm_kernel.
 
@@ -174,7 +174,7 @@ for(i in seq(1:7)) {
 }
 ```
 
-![](/uploads/2017/03/Figure4-R-benchmark-2-1024x690.png)
+![](/oneXPU/uploads/2017/03/Figure4-R-benchmark-2-1024x690.png)
 
 Figure 4. Performance comparison between gpuR in asynchronous mode and gmatrix in synchronization mode
 

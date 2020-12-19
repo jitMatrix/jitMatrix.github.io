@@ -260,7 +260,7 @@ On 2-core/4-thread cpu, we got a more than four–fold speed boost. This is impr
 Timing Examples
 ===============
 
-As an extended timing example, we run all the (optimized) examples above using a Xeon-L5420 cpu with 8 cores, single thread per core. The figure below depicts the compute time for single-threaded R and C++ code, and for C++/openMP code with 8 threads, as a function of data size. ![timings](/uploads/2016/07/timings-1-1024x585.png) The figure reveals several facts. First, for non-parallelized code we can see that
+As an extended timing example, we run all the (optimized) examples above using a Xeon-L5420 cpu with 8 cores, single thread per core. The figure below depicts the compute time for single-threaded R and C++ code, and for C++/openMP code with 8 threads, as a function of data size. ![timings](/oneXPU/uploads/2016/07/timings-1-1024x585.png) The figure reveals several facts. First, for non-parallelized code we can see that
 
 1.  Optimized R and C++ code are of virtually identical speed.
 2.  compute time grows linearily in data size.
@@ -270,7 +270,7 @@ For openMP code the figure tells
 3.  openMP with 8 threads is substantially slower for data size less than about 100k. For larger data, multi-threaded approach is clearly faster.
 4.  openMP execution time is almost constant for data size up to 4M. For larger data vectors, it increases linearily. This suggests that for smaller data size, openMP execution time is dominated by thread creation and management overheads, not by computations.
 
-Finally, let's compare the computation times for different number of threads for 8M data size. ![timings_n](/uploads/2016/07/timings_n-2-1024x585.png) The figure shows the run time for single threaded versions of the code (R and C), and multi-threaded openMP versions with 1 to 9 threads (OMP.1 to OMP.9).
+Finally, let's compare the computation times for different number of threads for 8M data size. ![timings_n](/oneXPU/uploads/2016/07/timings_n-2-1024x585.png) The figure shows the run time for single threaded versions of the code (R and C), and multi-threaded openMP versions with 1 to 9 threads (OMP.1 to OMP.9).
 
 1.  More cpus give us shorter execution times. 1-thread OMP will run almost 1.7 times slower than 8-threaded version (3.9 and 2.3 s respectively).
 2.  The gain of more cpu cores working on the problem levels off quickly. Little noticeable gain is visible for more than 3 cores. It indicates that the calculations are only partly limited by computing-power. Another major bottleneck may be memory speed.
