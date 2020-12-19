@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>R benchmark for High-Performance Analytics and Computing (I):Accelerators | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="Objectives of ExperimentsR is more and more popular in various fields, including the high-performance analytics and computing (HPAC) fields. Nowadays, the architecture of HPC system can be classified">
+<meta property="og:type" content="article">
+<meta property="og:title" content="R benchmark for High-Performance Analytics and Computing (I):Accelerators">
+<meta property="og:url" content="https://jitmatrix.github.io/oneXPU/2016/04/15/r-hpac-benchmark-analysis/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="Objectives of ExperimentsR is more and more popular in various fields, including the high-performance analytics and computing (HPAC) fields. Nowadays, the architecture of HPC system can be classified">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://www.parallelr.com/wp-content/uploads/2016/04/table2.png">
+<meta property="og:image" content="http://www.parallelr.com/wp-content/uploads/2016/04/table3.png">
+<meta property="og:image" content="http://www.parallelr.com/wp-content/uploads/2016/04/image004.png">
+<meta property="og:image" content="http://www.parallelr.com/wp-content/uploads/2016/04/image005-3-1024x674.png">
+<meta property="og:image" content="http://www.parallelr.com/wp-content/uploads/2016/04/image007.png">
+<meta property="og:image" content="http://www.parallelr.com/wp-content/uploads/2016/04/image009-2-1024x674.png">
+<meta property="og:image" content="http://www.parallelr.com/wp-content/uploads/2016/04/image008-1024x674.png">
+<meta property="og:image" content="http://www.parallelr.com/wp-content/uploads/2016/04/111.png">
+<meta property="article:published_time" content="2016-04-15T05:10:18.000Z">
+<meta property="article:modified_time" content="2020-12-19T06:24:12.240Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="rstats">
+<meta property="article:tag" content="performance optimization">
+<meta property="article:tag" content="R">
+<meta property="article:tag" content="cuBLAS">
+<meta property="article:tag" content="MKL">
+<meta property="article:tag" content="GEMM">
+<meta property="article:tag" content="HPC">
+<meta property="article:tag" content="data analytics">
+<meta property="article:tag" content="benchmark">
+<meta property="article:tag" content="HPAC">
+<meta property="article:tag" content="MIC">
+<meta property="article:tag" content="mutlithreading">
+<meta property="article:tag" content="Xeon">
+<meta property="article:tag" content="Xeon Phi">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://www.parallelr.com/wp-content/uploads/2016/04/table2.png">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeface-source-code-pro@0.0.71/index.min.css">
+
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+<meta name="generator" content="Hexo 5.3.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://jitmatrix.github.io/oneXPU"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-r-hpac-benchmark-analysis" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2016/04/15/r-hpac-benchmark-analysis/" class="article-date">
+  <time class="dt-published" datetime="2016-04-15T05:10:18.000Z" itemprop="datePublished">2016-04-15</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Accelerators/">Accelerators</a>►<a class="article-category-link" href="/categories/Accelerators/GPGPU/">GPGPU</a>►<a class="article-category-link" href="/categories/Accelerators/GPGPU/MultiCores/">MultiCores</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      R benchmark for High-Performance Analytics and Computing (I):Accelerators
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h2 id="Objectives-of-Experiments"><a href="#Objectives-of-Experiments" class="headerlink" title="Objectives of Experiments"></a>Objectives of Experiments</h2><p>R is more and more popular in various fields, including the high-performance analytics and computing (HPAC) fields. Nowadays, the architecture of HPC system can be classified as pure CPU system, CPU + Accelerators (GPGPU/FPGA) heterogeneous system, CPU + Coprocessors system. In software side, high performance scientific libraries, such as basic linear algebra subprograms (BLAS), will significantly influence the performance of R for HPAC applications. So, in the first post of R benchmark series, the experiments mainly contain two aspects: <em>(1)  Performance on different architectures of HPC system,</em> <em>(2)  Performance on different BLAS libraries.</em> </p>
+<h2 id="Benchmark-and-Testing-Goals"><a href="#Benchmark-and-Testing-Goals" class="headerlink" title="Benchmark and Testing Goals"></a>Benchmark and Testing Goals</h2><p>In this post, we choose R-25 benchmark (available in <a target="_blank" rel="noopener" href="http://r.research.att.com/benchmarks/">here</a> ) which includes the most popular, widely acknowledged functions in the high performance analytic field. The testing script includes fifteen common computational intensive tasks (in Table-1) grouped into three categories: <em>(1) Matrix Calculation (1-5)</em> <em>(2) Matrix function (6-10)</em> <em>(3) Programmation (11-15)</em></p>
+<p>Table-1 R-25 Benchmark Description</p>
+<p><strong>Task Number</strong></p>
+<p><strong>R-25 Benchmark Description</strong></p>
+<p>1</p>
+<p>Creation,transposition,deformation of a 2500*2500 matrix</p>
+<p>2</p>
+<p>2400*2400 normal distributed random matrix</p>
+<p>3</p>
+<p>Sorting of 7,000,000 random values</p>
+<p>4</p>
+<p>2800*2800 cross-product matrix</p>
+<p>5</p>
+<p>Linear regression over a 3000*3000 matrix</p>
+<p>6</p>
+<p>FFT over 2,400,000 random values</p>
+<p>7</p>
+<p>Eigenvalues of a 640*640 random values</p>
+<p>8</p>
+<p>Determinant of a 2500*2500 random matrix</p>
+<p>9</p>
+<p>Cholesky decomposition of a 3000*3000 matrix</p>
+<p>10</p>
+<p>Inverse of a 1600*1600 random matrix</p>
+<p>11</p>
+<p>3,500,000 Fibonacci numbers calculation(vector calculation)</p>
+<p>12</p>
+<p>Creation of a 3000*3000 Hilbert matrix(matrix calculation)</p>
+<p>13</p>
+<p>Grand common divisors of 400,000 pairs(recursion)</p>
+<p>14</p>
+<p>Creation of a 500*500 Toeplitz matrix(loops)</p>
+<p>15</p>
+<p>Escoufier’s method on a 45*45 matrix(mixed)</p>
+<p>  In our benchmark, we measured the performance of R-25 benchmark on various hardware platforms, including Intel Xeon CPU processors, NVIDIA GPGPU cards and Intel Xeon Phi coprocessors. Meanwhile, R built with different BLAS libraries results in different performance, so we tested R with self-contained BLAS, OpenBLAS, Intel MKL and CUDA BLAS. <strong>Because the performance of self-contained BLAS is</strong> <strong>hugely**</strong> lower than the other BLAS library and in practice HPAC users of R always built R with high performance BLAS, the testing results running with self-contained BLAS is negligible. ** Moreover, in order to investigate the performance of functions or algorithms such as GEMM that HPC users mostly used, we explore the speed-up when varying the size of the matrices and number of elements as known as <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Scalability">scalability</a>.  </p>
+<h2 id="System-Descriptions"><a href="#System-Descriptions" class="headerlink" title="System Descriptions"></a>System Descriptions</h2><p>To evaluate the applicability of different methods for improving R performance in a HPC environment, the hardware and software of platform we used listed in the Table-2 and Table-3. <a target="_blank" rel="noopener" href="http://www.parallelr.com/wp-content/uploads/2016/04/table2.png"><img src="http://www.parallelr.com/wp-content/uploads/2016/04/table2.png" alt="hardware configuration"></a> <a target="_blank" rel="noopener" href="http://www.parallelr.com/wp-content/uploads/2016/04/table3.png"><img src="http://www.parallelr.com/wp-content/uploads/2016/04/table3.png" alt="software configuration"></a>  </p>
+<h2 id="Results-and-Discussions"><a href="#Results-and-Discussions" class="headerlink" title="Results and Discussions"></a>Results and Discussions</h2><h4 id="1-General-Comparisons"><a href="#1-General-Comparisons" class="headerlink" title="(1) General Comparisons"></a><em>(1) General Comparisons</em></h4><p>Fig. 1 shows the speedup of R using different BLAS libraries and different hosts. The default R running with OpenBLAS is shown in red as <strong>our baseline</strong> for comparison so that its speedup is constantly equal to one. Intel Xeon E5-2670 has eight physical cores in one chipset, so there are 16 physical cores in one server node.<a target="_blank" rel="noopener" href="https://software.intel.com/en-us/articles/parallelism-in-the-intel-math-kernel-library">Intel MKL library</a> supports the single thread mode (Sequential) or OpenMP threading mode. MKL with OpenMP threading mode defaultly uses all physical cores in one node(here is 16).Fig.1 shows the results of using Intel MKL for 1 thread and 16 threads with automatic parallel execution are shown in blue. There are five subtasks showing a significant benefit from either optimized sequential math library or the automatic parallelization with MKL including <strong>crossprod</strong> (matrix size 2800*2800), <strong>linear regression</strong>, <strong>matrix decomposition</strong>, <strong>computing inverse</strong> and <strong>determinant of a matrix</strong>. Other non-computational intensive tasks received very little performance gains from parallel execution with MKL. <a target="_blank" rel="noopener" href="http://www.parallelr.com/wp-content/uploads/2016/04/image004.png"><img src="http://www.parallelr.com/wp-content/uploads/2016/04/image004.png" alt="Speedup compared with OpenBLAS"></a></p>
+<p>Fig.1 Performance comparison among  Intel MKL and NVIDIA BLAS against R+OpenBLAS</p>
+<p>We also exploited parallelism with CUDA BLAS (libnvblas.so) on NVIDIA GPU platform. Since drop-in library (nvblas) only accelerated the level 3 BLAS functions and overhead of preloading, the result (green column) in Fig.2 showed little benefit and even worse performance for some computing tasks against Intel MKL accelerations.</p>
+<p><a target="_blank" rel="noopener" href="http://www.parallelr.com/wp-content/uploads/2016/04/image005-3.png"><img src="http://www.parallelr.com/wp-content/uploads/2016/04/image005-3-1024x674.png" alt="Speedup against Xeon"></a></p>
+<p>Fig.2 Performance comparison for CPU and GPU with NVIDIA BLAS and Intel MKL</p>
+<h4 id="2-Scalability-on-NVIDIA-GPU"><a href="#2-Scalability-on-NVIDIA-GPU" class="headerlink" title="(2) Scalability on NVIDIA GPU"></a><em>(2) Scalability on NVIDIA GPU</em></h4><p>The performance using two GPU devices (green column) is not superior to using one GPU device (blue column) , even the results of some subtasks on one GPU device gains more. Taking the function <strong>crossproduct</strong> with computing-intensive as an example is to explain the difference between one GPU device and two GPU device, as followed the Fig. 3. The advantage of the performance of the two card is gradually displayed as the size of the matrix increases. The sub-vertical axis shows the ratio of the elapsed time on two devices to one device. A ratio greater than 1 indicates that the two card performance is better than 1 cards,and the greater the ratio of the two cards, the better the performance of the card.  </p>
+<p><a target="_blank" rel="noopener" href="http://www.parallelr.com/wp-content/uploads/2016/04/image007.png"><img src="http://www.parallelr.com/wp-content/uploads/2016/04/image007.png" alt="Scalability on GPU with R"></a>Fig.3 Scalability for 1X and 2X NVIDIA K40m GPU for ‘crossprod’ function</p>
+<h4 id="3-Heterogeneous-Parallel-Models-on-Intel-Xeon-Phi-MIC"><a href="#3-Heterogeneous-Parallel-Models-on-Intel-Xeon-Phi-MIC" class="headerlink" title="(3) Heterogeneous Parallel Models on Intel Xeon Phi (MIC)"></a><em>(3) Heterogeneous Parallel Models on Intel Xeon Phi (MIC)</em></h4><p>To compare the parallelism supported by pure CPU (Intel Xeon processor) and Intel Xeon Phi  coprocessor, we conducted <strong>batch runs</strong> (  10 times for the average elapsed time) with the different matrix size of matrix production. MKL supports <a target="_blank" rel="noopener" href="https://software.intel.com/sites/default/files/11MIC42_How_to_Use_MKL_Automatic_Offload_0.pdf"><strong>automatic offload</strong></a> computation to Intel Xeon Phi card, but before using you must know , Automatic offload functions in MKL</p>
+<ul>
+<li>  Level-3 BLAS: GEMM, TRSM, TRMM, SYMM</li>
+<li>  LAPACK 3 amigos : LU, QR, Cholesky</li>
+</ul>
+<p>Matrix size for offloading</p>
+<ul>
+<li>  GEMM: M, N &gt;2048, K&gt;256</li>
+<li>  SYMM: M, N &gt;2048</li>
+<li>  TRSM/TRMM: M, N &gt;3072</li>
+<li>  LU: M, N&gt;8192</li>
+</ul>
+<p>Here, we use <code>**a%*%a</code>** substituted for the function `crossprod` used in R-benchmark-25.R because <code>_crossprod_</code> can not be auto-offloaded to Intel Xeon Phi.  We compared the elapsed time running on CPU+Xeon Phi with running on pure CPU. In Fig.4, the vertical axis is the ratio of running elapsed time with CPU+Xeon Phi running mode to elapsed time with pure CPU running mode. The results showed the greater size of the matrix, the better performance CPU+Xeon Phi gains. The matrix size less than 4000 could get the best performance on pure CPU.  </p>
+<p><a target="_blank" rel="noopener" href="http://www.parallelr.com/wp-content/uploads/2016/04/image009-2.png"><img src="http://www.parallelr.com/wp-content/uploads/2016/04/image009-2-1024x674.png" alt="Heterogeneous Computing with Xeon and Xeon Phi for R"></a></p>
+<p>Fig.4 Heterogeneous Computing with Intel Xeon and Intel Xeon Phi</p>
+<p>Fig.5  shows the 80% computation on Xeon Phi could get the best performance as the matrix size is growing, 70% computation on Xeon Phi could get the steadily better performance when the matrix size larger than 2000. <a target="_blank" rel="noopener" href="http://www.parallelr.com/wp-content/uploads/2016/04/image008.png"><img src="http://www.parallelr.com/wp-content/uploads/2016/04/image008-1024x674.png" alt="Scalability for Xeon and Xeon Phi for R"></a></p>
+<p>Fig.5 Different computation ratio on Intel Xeon Phi result in different performance</p>
+<h4 id="4-Comparison-NVIDIA-GPU-with-Intel-Xeon-Phi"><a href="#4-Comparison-NVIDIA-GPU-with-Intel-Xeon-Phi" class="headerlink" title="(4) Comparison NVIDIA GPU with Intel Xeon Phi"></a><em>(4) Comparison NVIDIA GPU with Intel Xeon Phi</em></h4><p>Here, we plotted the results of NVIDIA GPU and Intel Xeon Phi compared to Intel Xeon in Fig.6. In general, 80% running on Xeon Phi(2X 7110P)+Xeon CPU(2X E5-2670)  gets similar performance to 1X K40m+2X E5-2670(2X 7110P ~ 1X K40m). When the matrix size is less than 12000, GPU gets better performance than Xeon Phi. And after that, Intel Xeon Phi shows the similar performance with NVIDIA K40m. For this benchmark, it can clearly seen that NVIDIA’s Tesla GPU(2X K40m) outperforms significantly.At 16000 of matrix size, nearly 3.9x faster than the 8-core dual E5-2670(Sandy-Bridge CPU) and 2.3x faster than the 80% running on Xeon Phi. The Xeon Phi is 2.8x faster than the Sandy-Bridge.  </p>
+<p><a target="_blank" rel="noopener" href="http://www.parallelr.com/wp-content/uploads/2016/04/111.png"><img src="http://www.parallelr.com/wp-content/uploads/2016/04/111.png" alt="Intel Xeon Phi .vs. NVIDIA GPU"></a></p>
+<p>Fig.6 Comparison NVIDIA GPU with Intel Xeon Phi</p>
+<h2 id="Conclusions"><a href="#Conclusions" class="headerlink" title="Conclusions"></a><strong>Conclusions</strong></h2><p>In this article, we tested the R-benchmark-25.R script on the different hardware platform with different BLAS libraries. From our analysis, we concluded (1) R built with  Intel MKL (either sequential or threaded) can accelerate lots of computationally intensive algorithms of HPAC and get  the best performance, such as linear regression, PCA, SVD (2) R is performed faster on GPU for matrix production (GEMM) since it’s really computational intensive algorithm and GPU has more computing cores than Intel Xeon or Xeon Phi (3) R executed in the heterogeneous platforms (CPU+GPU or CPU+MIC) can gain more performance improvements (4) R can get more benefits from multiple GPUs, especially for large GEMM operations.   In the next post, we will further investigate the benchmark performance with different R parallel packages and commercial productions of R .  </p>
+<hr>
+<h2 id="Appendix-How-to-build-R-with-different-BLAS-library"><a href="#Appendix-How-to-build-R-with-different-BLAS-library" class="headerlink" title="Appendix : How to build R with different BLAS library"></a><strong>Appendix : How to build R with different BLAS library</strong></h2><h4 id="Stock-R"><a href="#Stock-R" class="headerlink" title="Stock R"></a>Stock R</h4><p>(1) Stock R build Download base R package from the R project <a target="_blank" rel="noopener" href="http://www.r-project.org/">website</a>, the current package is R-3.2.3. Enter into the R root directory, and execute _  &gt; $./configure –with-readline=no –with-x=no –prefix=$HOME/R-3.2.3-ori_ _  &gt; $make -j4_ _  &gt; $make install_ (2) Add R bin directory and library directory to the environment variables PATH and LD_LIBRARY_PATH seperately, just like as: _  &gt; export PATH=$HOME/R-3.2.3-ori/bin:$PATH_ _  &gt; export LD_LIBRARY_PATH=$HOME/R-3.2.3-ori/lib64/R/lib:$LD_LIBRARY_PATH_</p>
+<h4 id="R-with-OpenBLAS"><a href="#R-with-OpenBLAS" class="headerlink" title="R with OpenBLAS"></a>R with OpenBLAS</h4><p>(1) OpenBLAS build Download OpenBlas-0.2.15.tar.gz from <a target="_blank" rel="noopener" href="http://www.openblas.net/">http://www.openblas.net/</a> Change directory to OpenBLAS Home directory, and execute _  &gt; $make_ _  &gt; $make PREFIX=$OPENBLAS_INSTALL_DIRECTORY install_ (2) Set the OpenBLAS library environment (3) Run benchmark _  &gt; $LD_PRELOAD=$OPENBLAS_HOME/lib/libopenblas.so R_</p>
+<h4 id="R-with-Intel-MKL"><a href="#R-with-Intel-MKL" class="headerlink" title="R with Intel MKL"></a>R with Intel MKL</h4><p>(1）Obtain Intel parallel studio software from <a target="_blank" rel="noopener" href="https://software.intel.com/en-us/intel-parallel-studio-xe">Intel website</a> (2) Install the parallel studio (3) Set the Intel compiler and MKL library environment (4) Build R with MKL Link MKL libraries configuration file mkl.conf as follows: a. Sequencial MKL or MKL single thread</p>
+<p><em>#make sure intel compiler is installed and loaded which can be set in .bashrc</em> <em>## as e.g.</em> <em>source /opt/intel/bin/compilervars.sh intel64</em> <em>MKL_LIB_PATH=/opt/intel/mkl/lib/intel64## Use intel compiler</em> <em>CC=’icc -std=c99’</em> <em>CFLAGS=’-g -O3 -wd188 -ip ‘F77=’ifort’</em> <em>FFLAGS=’-g -O3 ‘CXX=’icpc’</em> <em>CXXFLAGS=’-g -O3 ‘FC=’ifort’</em> <em>FCFLAGS=’-g -O3 ‘## MKL sequential, ICC</em> <em>MKL=” -L${MKL_LIB_PATH} \</em> <em>-Wl,–start-group \</em> <em>-lmkl_intel_lp64 \</em> <em>-lmkl_sequential _ _-lmkl_core \</em> <em>-Wl,–end-group”</em></p>
+<p>b.  OpenMP Threading MKL</p>
+<p><em>#make sure intel compiler is installed and loaded which can be set in .bashrc</em> <em>## as e.g.</em> <em>source /opt/intel/bin/compilervars.sh intel64</em> <em>MKL_LIB_PATH=/opt/intel/mkl/lib/intel64## Use intel compiler</em> <em>CC=’icc -std=c99’</em> <em>CFLAGS=’-g -O3 -wd188 -ip ‘F77=’ifort’</em> <em>FFLAGS=’-g -O3 ‘CXX=’icpc’</em> <em>CXXFLAGS=’-g -O3 ‘FC=’ifort’</em> <em>FCFLAGS=’-g -O3 ‘## MKL With Intel MP threaded , ICC</em> <em>MKL=” -L${MKL_LIB_PATH} \</em> <em>-Wl,–start-group \</em> <em>-lmkl_intel_lp64 \</em> <em>-lmkl_intel_thread \</em> <em>-lmkl_core _ _-Wl,–end-group \</em> <em>-liomp5 -lpthread”</em></p>
+<p>build R with following command, _  &gt; $./configure –prefix=$HOME/R-3.2.3-mkl-icc –with-readline=no –with-x=no –with-blas=”$MKL” –with-lapack CC=’icc -std=c99’ CFLAGS=’-g -O3 -wd188 -ip ‘ F77=’ifort’ FFLAGS=’-g -O3 ‘ CXX=’icpc’ CXXFLAGS=’-g -O3 ‘ FC=’ifort’ FCFLAGS=’-g -O3 ‘_ _  &gt; $make -j 4; make install_ (5) Set $HOME/R-3.2.3-mkl-icc environment</p>
+<h4 id="R-with-CUDA-BLAS"><a href="#R-with-CUDA-BLAS" class="headerlink" title="R with CUDA BLAS"></a>R with CUDA BLAS</h4><p>(1) Install the driver and CUDA tools with version  up to 6.5 for NVIDIA Tesla Cards (2)Set the CUDA environment (3)Edit the nvblas.conf file</p>
+<p><em># This is the configuration file to use NVBLAS Library</em> <em># Setup the environment variable NVBLAS_CONFIG_FILE to specify your own config file.</em> <em># By default, if NVBLAS_CONFIG_FILE is not defined,</em> <em># NVBLAS Library will try to open the file “nvblas.conf” in its current directory</em> <em># Example : NVBLAS_CONFIG_FILE /home/cuda_user/my_nvblas.conf</em> <em># The config file should have restricted write permissions accesses# Specify which output log file (default is stderr)</em> <em>NVBLAS_LOGFILE nvblas.log#Put here the CPU BLAS fallback Library of your choice_ <em>#It is strongly advised to use full path to describe the location of the CPU Library</em> _NVBLAS_CPU_BLAS_LIB /opt/R-3.2.3-ori/lib64/R/lib/libRblas.so</em> <em>#NVBLAS_CPU_BLAS_LIB &lt;mkl_path_installtion&gt;/libmkl_rt.so# List of GPU devices Id to participate to the computation</em> <em># Use ALL if you want all your GPUs to contribute</em> <em># Use ALL0, if you want all your GPUs of the same type as device 0 to contribute</em> <em># However, NVBLAS consider that all GPU have the same performance and PCI bandwidth</em> <em># By default if no GPU are listed, only device 0 will be used#NVBLAS_GPU_LIST 0 2 4</em> <em>#NVBLAS_GPU_LIST ALL</em> <em>NVBLAS_GPU_LIST ALL# Tile Dimension</em> <em>NVBLAS_TILE_DIM 2048# Autopin Memory</em> <em>NVBLAS_AUTOPIN_MEM_ENABLED#List of BLAS routines that are prevented from running on GPU (use for debugging purpose</em> <em># The current list of BLAS routines supported by NVBLAS are</em> <em># GEMM, SYRK, HERK, TRSM, TRMM, SYMM, HEMM, SYR2K, HER2K#NVBLAS_GPU_DISABLED_SGEMM</em> <em>#NVBLAS_GPU_DISABLED_DGEMM</em> <em>#NVBLAS_GPU_DISABLED_CGEMM</em> <em>#NVBLAS_GPU_DISABLED_ZGEMM# Computation can be optionally hybridized between CPU and GPU</em> <em># By default, GPU-supported BLAS routines are ran fully on GPU</em> <em># The option NVBLAS_CPU_RATIO</em>&lt;BLAS_ROUTINE&gt; give the ratio [0,1]_ <em># of the amount of computation that should be done on CPU</em> <em># CAUTION : this option should be used wisely because it can actually</em> <em># significantly reduced the overall performance if too much work is given to CPU#NVBLAS_CPU_RATIO_CGEMM 0.07</em></p>
+<p>Set NVBLAS_CONFIG_FILE to the nvblas.conf location (4) Run the benchmark _  &gt; LD_PRELOAD=/opt/cuda-7.5/lib64/libnvblas.so R_</p>
+<h4 id="R-with-MKL-on-Intel-Xeon-Phi"><a href="#R-with-MKL-on-Intel-Xeon-Phi" class="headerlink" title="R with MKL on Intel Xeon Phi"></a>R with MKL on Intel Xeon Phi</h4><p>(1) Build R with MKL Build R with MKL is same to Threaded MKL at 6 (2) Enable MKL  MIC Automatic Offload Mode _  &gt; export MKL_MIC_ENABLE=1_ _  &gt; export MIC_KMP_AFFINITY=compact_ Otherwise , you can set the workload division between host CPU and MIC card. If one host has two MIC cards, you could set: _  &gt; export MKL_HOST_WORKDIVISION=0.2_ _  &gt; export MKL_MIC_0_WORKDIVISION=0.4_ _  &gt; export MKL_MIC_1_WORKDIVISION=0.4_</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://jitmatrix.github.io/oneXPU/2016/04/15/r-hpac-benchmark-analysis/" data-id="ckivbgfsk006awpol6sxw4wcr" data-title="R benchmark for High-Performance Analytics and Computing (I):Accelerators" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/GEMM/" rel="tag">GEMM</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/HPAC/" rel="tag">HPAC</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/HPC/" rel="tag">HPC</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/MIC/" rel="tag">MIC</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/MKL/" rel="tag">MKL</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/R/" rel="tag">R</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Xeon/" rel="tag">Xeon</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Xeon-Phi/" rel="tag">Xeon Phi</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/benchmark/" rel="tag">benchmark</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cuBLAS/" rel="tag">cuBLAS</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/data-analytics/" rel="tag">data analytics</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mutlithreading/" rel="tag">mutlithreading</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/performance-optimization/" rel="tag">performance optimization</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rstats/" rel="tag">rstats</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2016/05/04/r-gpu-programming-for-all-with-gpur/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          R - GPU Programming for All with &#39;gpuR&#39;
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2016/03/08/r-dnn-parallel-acceleration/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">R for Deep Learning (II): Achieve High-Performance DNN with Parallel Acceleration</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Accelerators/">Accelerators</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Accelerators/GPGPU/">GPGPU</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Accelerators/GPGPU/MultiCores/">MultiCores</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Accelerators/GPGPU/Performance-Optimizaiton/">Performance Optimizaiton</a></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Accelerators/General/">General</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Accelerators/General/GPGPU/">GPGPU</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Accelerators/General/GPGPU/MultiCores/">MultiCores</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Accelerators/General/GPGPU/MultiCores/Performance-Optimizaiton/">Performance Optimizaiton</a></li></ul></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Accelerators/General/MPI/">MPI</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Accelerators/General/MPI/MultiCores/">MultiCores</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Accelerators/General/MPI/MultiCores/Performance-Optimizaiton/">Performance Optimizaiton</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Accelerators/General/MPI/MultiCores/Performance-Optimizaiton/Vectorization/">Vectorization</a></li></ul></li></ul></li></ul></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Accelerators/MultiCores/">MultiCores</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Accelerators/MultiCores/Performance-Optimizaiton/">Performance Optimizaiton</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Accelerators/MultiCores/Vectorization/">Vectorization</a></li></ul></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/GPGPU/">GPGPU</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/GPGPU/Intel-Xeon-Phi/">Intel Xeon Phi</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/GPGPU/MultiCores/">MultiCores</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/GPGPU/MultiCores/Performance-Optimizaiton/">Performance Optimizaiton</a></li></ul></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/General/">General</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/General/MultiCores/">MultiCores</a></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Uncategorized/">Uncategorized</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/BLAS/" rel="tag">BLAS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CRAN/" rel="tag">CRAN</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CUDA/" rel="tag">CUDA</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GEMM/" rel="tag">GEMM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GPU/" rel="tag">GPU</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/H2O/" rel="tag">H2O</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HPAC/" rel="tag">HPAC</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HPC/" rel="tag">HPC</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MIC/" rel="tag">MIC</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MKL/" rel="tag">MKL</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MNIST/" rel="tag">MNIST</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Maximum-Likelihood/" rel="tag">Maximum Likelihood</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/R/" rel="tag">R</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Rcpp/" rel="tag">Rcpp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SSE/" rel="tag">SSE</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Xeon/" rel="tag">Xeon</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Xeon-Phi/" rel="tag">Xeon Phi</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/benchmark/" rel="tag">benchmark</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/big-data/" rel="tag">big data</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/boost/" rel="tag">boost</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/classification/" rel="tag">classification</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cuBLAS/" rel="tag">cuBLAS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/data-analytics/" rel="tag">data analytics</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deep-learning/" rel="tag">deep learning</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dnn/" rel="tag">dnn</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/doMC/" rel="tag">doMC</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/doParallel/" rel="tag">doParallel</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/foreach/" rel="tag">foreach</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gmatrix/" rel="tag">gmatrix</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gpuR/" rel="tag">gpuR</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gputools/" rel="tag">gputools</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/high-performance/" rel="tag">high performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/iris/" rel="tag">iris</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/knn/" rel="tag">knn</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/lightboost/" rel="tag">lightboost</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/machine-learing/" rel="tag">machine learing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/machine-learning/" rel="tag">machine learning</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mcapply/" rel="tag">mcapply</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/memory-usage/" rel="tag">memory usage</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/multicores/" rel="tag">multicores</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/multit/" rel="tag">multit</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/multithreads/" rel="tag">multithreads</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mutlithreading/" rel="tag">mutlithreading</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mutltiGPU/" rel="tag">mutltiGPU</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/neural-network/" rel="tag">neural network</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nvblas/" rel="tag">nvblas</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/openMP/" rel="tag">openMP</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/openblas/" rel="tag">openblas</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/parallel/" rel="tag">parallel</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/parallel-computing/" rel="tag">parallel computing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/parlapply/" rel="tag">parlapply</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/performance-optimization/" rel="tag">performance optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/profiling/" rel="tag">profiling</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/" rel="tag">python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rstats/" rel="tag">rstats</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sklearn/" rel="tag">sklearn</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/snow/" rel="tag">snow</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/xgboost/" rel="tag">xgboost</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/BLAS/" style="font-size: 10px;">BLAS</a> <a href="/tags/CRAN/" style="font-size: 10px;">CRAN</a> <a href="/tags/CUDA/" style="font-size: 12px;">CUDA</a> <a href="/tags/GEMM/" style="font-size: 12px;">GEMM</a> <a href="/tags/GPU/" style="font-size: 14px;">GPU</a> <a href="/tags/H2O/" style="font-size: 12px;">H2O</a> <a href="/tags/HPAC/" style="font-size: 10px;">HPAC</a> <a href="/tags/HPC/" style="font-size: 12px;">HPC</a> <a href="/tags/MIC/" style="font-size: 10px;">MIC</a> <a href="/tags/MKL/" style="font-size: 14px;">MKL</a> <a href="/tags/MNIST/" style="font-size: 10px;">MNIST</a> <a href="/tags/Maximum-Likelihood/" style="font-size: 10px;">Maximum Likelihood</a> <a href="/tags/R/" style="font-size: 20px;">R</a> <a href="/tags/Rcpp/" style="font-size: 10px;">Rcpp</a> <a href="/tags/SSE/" style="font-size: 10px;">SSE</a> <a href="/tags/Xeon/" style="font-size: 10px;">Xeon</a> <a href="/tags/Xeon-Phi/" style="font-size: 10px;">Xeon Phi</a> <a href="/tags/benchmark/" style="font-size: 10px;">benchmark</a> <a href="/tags/big-data/" style="font-size: 10px;">big data</a> <a href="/tags/boost/" style="font-size: 10px;">boost</a> <a href="/tags/classification/" style="font-size: 10px;">classification</a> <a href="/tags/cuBLAS/" style="font-size: 16px;">cuBLAS</a> <a href="/tags/data-analytics/" style="font-size: 12px;">data analytics</a> <a href="/tags/deep-learning/" style="font-size: 14px;">deep learning</a> <a href="/tags/dnn/" style="font-size: 12px;">dnn</a> <a href="/tags/doMC/" style="font-size: 10px;">doMC</a> <a href="/tags/doParallel/" style="font-size: 10px;">doParallel</a> <a href="/tags/foreach/" style="font-size: 10px;">foreach</a> <a href="/tags/gmatrix/" style="font-size: 10px;">gmatrix</a> <a href="/tags/gpuR/" style="font-size: 10px;">gpuR</a> <a href="/tags/gputools/" style="font-size: 10px;">gputools</a> <a href="/tags/high-performance/" style="font-size: 10px;">high performance</a> <a href="/tags/iris/" style="font-size: 10px;">iris</a> <a href="/tags/knn/" style="font-size: 10px;">knn</a> <a href="/tags/lightboost/" style="font-size: 10px;">lightboost</a> <a href="/tags/machine-learing/" style="font-size: 10px;">machine learing</a> <a href="/tags/machine-learning/" style="font-size: 12px;">machine learning</a> <a href="/tags/mcapply/" style="font-size: 10px;">mcapply</a> <a href="/tags/memory-usage/" style="font-size: 10px;">memory usage</a> <a href="/tags/multicores/" style="font-size: 18px;">multicores</a> <a href="/tags/multit/" style="font-size: 10px;">multit</a> <a href="/tags/multithreads/" style="font-size: 10px;">multithreads</a> <a href="/tags/mutlithreading/" style="font-size: 10px;">mutlithreading</a> <a href="/tags/mutltiGPU/" style="font-size: 10px;">mutltiGPU</a> <a href="/tags/neural-network/" style="font-size: 10px;">neural network</a> <a href="/tags/nvblas/" style="font-size: 10px;">nvblas</a> <a href="/tags/openMP/" style="font-size: 12px;">openMP</a> <a href="/tags/openblas/" style="font-size: 12px;">openblas</a> <a href="/tags/parallel/" style="font-size: 10px;">parallel</a> <a href="/tags/parallel-computing/" style="font-size: 18px;">parallel computing</a> <a href="/tags/parlapply/" style="font-size: 10px;">parlapply</a> <a href="/tags/performance-optimization/" style="font-size: 16px;">performance optimization</a> <a href="/tags/profiling/" style="font-size: 12px;">profiling</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/rstats/" style="font-size: 20px;">rstats</a> <a href="/tags/sklearn/" style="font-size: 10px;">sklearn</a> <a href="/tags/snow/" style="font-size: 10px;">snow</a> <a href="/tags/xgboost/" style="font-size: 10px;">xgboost</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">April 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">January 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/09/">September 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">August 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">July 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">May 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">April 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">March 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">February 2016</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2017/04/07/r-hpac-benchmark-analysis-gpu/">R benchmark for High-Performance Analytics and Computing (II): GPU Packages</a>
+          </li>
+        
+          <li>
+            <a href="/2017/01/24/parallel-computation-with-r-and-xgboost/">Parallel Computation with R and XGBoost</a>
+          </li>
+        
+          <li>
+            <a href="/2016/09/10/r-with-parallel-computing/">R with Parallel Computing from User Perspectives</a>
+          </li>
+        
+          <li>
+            <a href="/2016/08/15/r-cran-package-modernization-openmp/">R and OpenMP:  CRAN Package Modernization</a>
+          </li>
+        
+          <li>
+            <a href="/2016/07/26/r-and-openmp-boosting-compiled-code-on-multi-core-cpu-s/">R and openMP: boosting compiled code on multi-core cpu-s</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2020 John Doe<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.4.1.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>

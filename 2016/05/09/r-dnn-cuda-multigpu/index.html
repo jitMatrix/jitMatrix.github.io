@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>R for Deep Learning (III): CUDA and MultiGPUs Acceleration | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="Notes: 1. The entire source code of this post in here 2. The PDF version of this post in here  In previous two blogs (here and here), we illustrated several skills to build and optimize artificial neu">
+<meta property="og:type" content="article">
+<meta property="og:title" content="R for Deep Learning (III): CUDA and MultiGPUs Acceleration">
+<meta property="og:url" content="https://jitmatrix.github.io/oneXPU/2016/05/09/r-dnn-cuda-multigpu/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="Notes: 1. The entire source code of this post in here 2. The PDF version of this post in here  In previous two blogs (here and here), we illustrated several skills to build and optimize artificial neu">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://www.parallelr.com/wp-content/uploads/2016/03/orig-1.png">
+<meta property="og:image" content="http://www.parallelr.com/wp-content/uploads/2016/03/C_Call.png">
+<meta property="og:image" content="http://www.parallelr.com/wp-content/uploads/2016/03/cuda-300x291.png">
+<meta property="og:image" content="http://www.parallelr.com/wp-content/uploads/2016/03/mclappy-1024x555.png">
+<meta property="og:image" content="http://www.parallelr.com/wp-content/uploads/2016/03/MultiGPU_Runtime.png">
+<meta property="og:image" content="http://www.parallelr.com/wp-content/uploads/2016/03/MultiGPU_Speedup.png">
+<meta property="article:published_time" content="2016-05-09T00:00:08.000Z">
+<meta property="article:modified_time" content="2020-12-19T06:24:12.240Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="multicores">
+<meta property="article:tag" content="rstats">
+<meta property="article:tag" content="parallel computing">
+<meta property="article:tag" content="R">
+<meta property="article:tag" content="CUDA">
+<meta property="article:tag" content="deep learning">
+<meta property="article:tag" content="H2O">
+<meta property="article:tag" content="machine learning">
+<meta property="article:tag" content="mutltiGPU">
+<meta property="article:tag" content="profiling">
+<meta property="article:tag" content="snow">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://www.parallelr.com/wp-content/uploads/2016/03/orig-1.png">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeface-source-code-pro@0.0.71/index.min.css">
+
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+<meta name="generator" content="Hexo 5.3.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://jitmatrix.github.io/oneXPU"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-r-dnn-cuda-multigpu" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2016/05/09/r-dnn-cuda-multigpu/" class="article-date">
+  <time class="dt-published" datetime="2016-05-09T00:00:08.000Z" itemprop="datePublished">2016-05-09</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Accelerators/">Accelerators</a>►<a class="article-category-link" href="/categories/Accelerators/GPGPU/">GPGPU</a>►<a class="article-category-link" href="/categories/Accelerators/GPGPU/Performance-Optimizaiton/">Performance Optimizaiton</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      R for Deep Learning (III): CUDA and MultiGPUs Acceleration
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <p>Notes: 1. The entire source code of this post in <a target="_blank" rel="noopener" href="https://github.com/PatricZhao/ParallelR/blob/master/ParDNN">here</a> 2. The PDF version of this post in <a target="_blank" rel="noopener" href="http://www.parallelr.com/materials/4_CUDA/CUDA_DNN.pdf">here</a></p>
+<hr>
+<p>In previous two blogs (<a target="_blank" rel="noopener" href="http://www.parallelr.com/r-deep-neural-network-from-scratch/">here</a> and <a target="_blank" rel="noopener" href="http://www.parallelr.com/r-dnn-parallel-acceleration/">here</a>), we illustrated several skills to build and optimize artificial neural network (ANN) with R and speed up by parallel BLAS libraries in modern hardware platform including Intel Xeon and NVIDIA GPU. Nowadays, multiple GPU accelerations are crucial for learning huge networks, one example, as Microsoft won ImageNet competition with huge network up to 1000 layers in 2015, [<a target="_blank" rel="noopener" href="http://www.i-programmer.info/news/105-artificial-intelligence/9266-microsoft-wins-imagenet-using-extremely-deep-neural-networks.html">here</a> and <a target="_blank" rel="noopener" href="http://image-net.org/challenges/LSVRC/2015/results">here</a>]. In this blog, I will focus on applying CUDA implementation into our neural network offloading the computationally intensive parts into GPU and then we can easily extend CUDA implementation from single GPU to multiple GPUs under ‘<a target="_blank" rel="noopener" href="https://stat.ethz.ch/R-manual/R-devel/library/parallel/doc/parallel.pdf">parallel</a>’ packages of R.  P.S: If you want to go through all of these contents quickly, check out my presentation in GTC16 in <a target="_blank" rel="noopener" href="http://www.parallelr.com/GTC16/GTC16_PatricZhao_Unlock_DNN_Perf_CUDA.pdf">here</a>.  </p>
+<h2 id="CUDA-INTEGRATION"><a href="#CUDA-INTEGRATION" class="headerlink" title="CUDA INTEGRATION"></a>CUDA INTEGRATION</h2><p>Now, we begin to introduce our <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Ninja">ninja</a> skills : CUDA After  combined DNN code with CUDA BLAS library and several optimizations, we get the follow results in the table <a target="_blank" rel="noopener" href="http://www.parallelr.com/r-dnn-parallel-acceleration/">in the previous blog</a> and leave one question for readers:</p>
+<p><strong>What is your opinion about the next step of optimizations?</strong></p>
+<p><a target="_blank" rel="noopener" href="http://www.parallelr.com/wp-content/uploads/2016/03/orig.png"></a><a target="_blank" rel="noopener" href="http://www.parallelr.com/wp-content/uploads/2016/03/orig-1.png"><img src="http://www.parallelr.com/wp-content/uploads/2016/03/orig-1.png" alt="R_ANN"></a> It’s obvious that the function ‘pmax’ accounts for lots of runtimes (<strong>31.58</strong> secs) following ‘%<em>%’ (<strong>53.72</strong> secs) since ‘pmax’ is implemented by R and it will be very slow when the data size increase. (btw, you can try to increase the number of neurons in hidden layer to 1024 and profiling the code again to figure out the ratio of ‘pmax’ in the whole computation).  Reviewing the functionality of ‘pmax’ in our DNN case, we implement the ReLU function and get the maximum value among input value and 0 for every neuron in hidden layer. Furthermore, because our algorithm is vectorized by matrices for high performance,  the input of ‘pmax’ is a two-dimensional matrix and we can parallel maximum function into each element easily. So, let’s start to parallel the ReLu function by CUDA. I will skip the details of CUDA programming in this blog, you can refer programming guide in <a target="_blank" rel="noopener" href="http://docs.nvidia.com/cuda/cuda-c-programming-guide/#axzz47CbpOe1j">here</a>. First, we can write the CUDA code to compare the input value with ZERO. Despite it  is a very naïve implementation, it is still very fast than original R code. Throughout this kernel code can be executed in NVIDIA GPU, it is written by CUDA C rather than R. Next, we need to call it from R environment. In general, we have to write wrapper functions to bridge R,  C/C++, and CUDA. <a target="_blank" rel="noopener" href="http://heather.cs.ucdavis.edu/matloff.html">Prof. Matloff</a> and I have written the blog introduced linking R with CUDA step by step regarding with .Call() and .C() function with two-level wrappers from R to C/C++ and C/C++ to CUDA (<a target="_blank" rel="noopener" href="https://devblogs.nvidia.com/parallelforall/accelerate-r-applications-cuda/">here</a>  and <a target="_blank" rel="noopener" href="http://blog.revolutionanalytics.com/2015/01/parallel-programming-with-gpus-and-r.html">here</a>).  A brief summary about the major difference of .C() and .Call() is shown in below table. <a target="_blank" rel="noopener" href="http://www.parallelr.com/wp-content/uploads/2016/03/C_Call.png"><img src="http://www.parallelr.com/wp-content/uploads/2016/03/C_Call.png" alt="R_Cal_ function"></a> From the performance view, the .Call() function is selected since little overhead between R and C/C++ by avoiding explicit copying data from R to C/C++ and then from C/C++ back to R. In below code, we access data by a pointer and heavily use R internal structures with very efficient way. [code language=”C”] // difinition for R extern “C” { SEXP pmax_cuda(SEXP A, SEXP threshold, SEXP devID); } //CUDA: simple implementation of pmax __global__ void pmax_kernel(double \</em>A, const int M, const int N, const double threshold) { int tid = blockIdx.x * blockDim.x + threadIdx.x; if(tid &lt; M*N) { A[tid] = (A[tid]&gt;threshold)?A[tid]:0; } return; } // Wrapper code between R and CUDA SEXP pmax_cuda(SEXP A, SEXP threshold, SEXP devID) { // data structure for GPU double *A_host = NULL; double *A_d = NULL; double gw = 0; int mm = 0, nn = 0; int gpuID = 0; // data transfer from R to C by pointers A_host = REAL(A); SEXP Rdim = getAttrib(A, R_DimSymbol); mm = INTEGER(Rdim)[0]; nn = INTEGER(Rdim)[1]; gw = REAL(threshold)[0]; gpuID = INTEGER(devID)[0]; // for multiple GPU case cudaSetDevice(gpuID); // return value, allocated in C and can be used in R directly SEXP Rval; PROTECT(Rval = allocVector(REALSXP, mm*nn)); // GPU memory allocation cudaMalloc(&amp;A_d, mm*nn*sizeof(double)); if(NULL == A_d) { printf(“\nNo RAM space in GPU!\n”); UNPROTECT(1); return R_NilValue; } // memory copy from CPU to GPU cudaMemcpy(A_d, A_host, mm*nn*sizeof(double), cudaMemcpyHostToDevice); // CUDA: pmax, really computation parts pmax_kernel&lt;&lt;&lt;(mm*nn-1)/512+1, 512&gt;&gt;&gt;(A_d, mm, nn, gw); cudaMemcpy(REAL(Rval), A_d, mm*nn*sizeof(double), cudaMemcpyDeviceToHost); cudaDeviceSynchronize(); // Free unused memory of GPU if(A_d) {cudaFree(A_d); A_d=NULL;} UNPROTECT(1); return Rval; } [/code] Next, compile the C/C++ and CUDA code together to a shared object file (.so) or dynamic link library (.dll) for loading in R.</p>
+<blockquote>
+<p>nvcc -O3 -arch=sm_35 -G -I…/CUDA-v7.5.18/include -I…/R-3.2.0/bin/lib64/R/include/ -L…/R/lib64/R/lib –shared -Xcompiler -fPIC -o cudaR.so cudaR.cu</p>
+</blockquote>
+<p>Finally, the CUDA version of ‘pmax’ can be called in R as simple as R builtin function with R’s wrapper, and,  for infrastructure engineer, writing a nice wrapper is still an important job :)</p>
+<p># preload static object file<br><a target="_blank" rel="noopener" href="http://inside-r.org/r-doc/base/dyn.load">dyn.load</a>(“cudaR.so”)<br> <br># GPU version of pmax<br>pmax.cuda &lt;- <a target="_blank" rel="noopener" href="http://inside-r.org/r-doc/base/function">function</a>(A, threshold, devID=0L)<br>{<br>  rst &lt;- <a target="_blank" rel="noopener" href="http://inside-r.org/r-doc/base/.Call">.Call</a>(“pmax_cuda”,<br>                A,<br>                threshold,<br>                <a target="_blank" rel="noopener" href="http://inside-r.org/r-doc/base/as.integer">as.integer</a>(devID)<br>          )<br>  <a target="_blank" rel="noopener" href="http://inside-r.org/r-doc/base/dim">dim</a>(rst) &lt;- <a target="_blank" rel="noopener" href="http://inside-r.org/r-doc/base/dim">dim</a>(A)<br>  <a target="_blank" rel="noopener" href="http://inside-r.org/r-doc/base/return">return</a>(rst)<br>}</p>
+<p>Show our performance now!  By replacing ‘pmax’ with  new ‘pmax.cuda’,  the execution time of pmax reduces to <strong>6.7</strong> seconds from original 31.58 so it’s <strong>5X speedup</strong> and totally the <strong>1.2X speedup</strong> gains. <a target="_blank" rel="noopener" href="http://www.parallelr.com/wp-content/uploads/2016/03/cuda.png"><img src="http://www.parallelr.com/wp-content/uploads/2016/03/cuda-300x291.png" alt="cuda pmax "></a>  </p>
+<h2 id="Scale-out-to-MultiGPU"><a href="#Scale-out-to-MultiGPU" class="headerlink" title="Scale out to MultiGPU"></a><strong>Scale out to MultiGPU</strong></h2><p>Parallel computing is not a novel concept in R community. Data scientist is familiar with parallel strategies both in speedup their model construction and inference. In fact, the requirement of parallel computing in R is even higher than C/C++.  The C/C++ implementations always focus on low-level instructions and optimizations such as memory locality, communication, computation efficiency and much more while R aims to fast, easy and portability from high-level programming. Popular R packages handle most of low-level details and R users only focus on dataset decomposition and functional programming. Specifically, in this blog, we will show you parallel training of DNN with ‘<a target="_blank" rel="noopener" href="https://stat.ethz.ch/R-manual/R-devel/library/parallel/doc/parallel.pdf">parallel</a>’ package and extend it to multiGPUs.</p>
+<h4 id="HOGWILD"><a href="#HOGWILD" class="headerlink" title="HOGWILD!"></a>HOGWILD!</h4><p><a target="_blank" rel="noopener" href="http://arxiv.org/pdf/1106.5730v2.pdf">HOGWILD!</a> is a data parallel model designed for stochastic gradient descent. It’s a lock-free approach with the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/MapReduce">MapReduce</a>-like parallel-processing framework and can be used in DNN training . Thus, the training processing is designed as below: 1.Launch N workers 2.Each worker updates local weights/bias based on parts (1/N) of data 3.Master collects and averages all weights/bias from each worker 4.Each worker updates its weights/bias from master</p>
+<h4 id="Parallel-in-R"><a href="#Parallel-in-R" class="headerlink" title="Parallel in R"></a>Parallel in R</h4><p>In R, this flow can be implemented by ‘multicores’ packages (currently, ‘parallel’ package includes both ‘multicores’ and ‘snow’ in CRAN). In below, flow chart is the standard workflow of ‘multicore’ packages with our DNN. ‘mclapply’ function creates two processors which shares memory by copy-on-write and each processor train the network by parts of data. After several steps, the master processor will do a reduce step to collect  weights from two child processors and average them.In next iteration, two children will use the new weights. <a target="_blank" rel="noopener" href="http://www.parallelr.com/wp-content/uploads/2016/03/mclappy.png"><img src="http://www.parallelr.com/wp-content/uploads/2016/03/mclappy-1024x555.png" alt="mclappy with GPU"></a> Now, let’s see the details of how R code handles this data parallel model based on below real codes . 1. ‘mclapply’ creates N (devNum) workers based on ‘mc.cores’ and each worker will execute the same function, train.dnn.cublas, with different index (1:devNum); 2. the data is divided into N (devNum) parts and each worker will load their data simultaneously by their ID then the computation, even writing, can be ideally parallelized; 3. all workers exit when ‘mclapply’ is done and the results from every worker will be saved in a list (res).  Master continues to remain parts and then calculate the average of all weights and bias. 4. in the next loop, the ‘mclapply’ will use the averaged model (para.model) to train again.</p>
+<p># Parallel Training<br>res &lt;- <strong>mclapply</strong>(1:devNum, <a target="_blank" rel="noopener" href="http://inside-r.org/r-doc/base/function">function</a>(id) { train.dnn.cublas(x, y,<br>                                         omodel=para.model,<br>                                         taindata=traindata[N.start[id]:N.end[id],],<br>                                         devType=“<strong>GPU</strong>”, devID=(id-1), . . .) },<br>                mc.cores=devNum,<br>                mc.preschedule=TRUE)<br> <br> # Construct new model with parallel weights<br>    <a target="_blank" rel="noopener" href="http://inside-r.org/r-doc/stats/D">D</a> &lt;- res[[1]]$D<br>    H &lt;- res[[1]]$H<br>    K &lt;- res[[1]]$K<br>    for(i in 2:devNum) {<br>            res[[1]]$W1 &lt;- res[[1]]$W1 + res[[i]]$W1<br>            res[[1]]$W2 &lt;- res[[1]]$W2 + res[[i]]$W2<br>            res[[1]]$b1 &lt;- res[[1]]$b1 + res[[i]]$b1<br>            res[[1]]$b2 &lt;- res[[1]]$b2 + res[[i]]$b2<br>    }<br> <br>    para.model &lt;- <a target="_blank" rel="noopener" href="http://inside-r.org/r-doc/base/list">list</a>( <a target="_blank" rel="noopener" href="http://inside-r.org/r-doc/stats/D">D</a> = <a target="_blank" rel="noopener" href="http://inside-r.org/r-doc/stats/D">D</a>,<br>                        H = H,<br>                        K = K,<br>                        # weights and bias<br>                        W1= res[[1]]$W1/devNum,<br>                        b1= res[[1]]$b1/devNum,<br>                        W2= res[[1]]$W2/devNum,<br>                        b2= res[[1]]$b2/devNum)</p>
+<h4 id="Extent-to-MultiGPU"><a href="#Extent-to-MultiGPU" class="headerlink" title="Extent to MultiGPU"></a>Extent to MultiGPU</h4><p>Then scale to multiple GPUs, the workflow is almost as similar as CPU and only different is that each worker needs to set GPU ID explicitly and then run previous CUDA accelerated code. In other words, users still are able to access the same CUDA codes that they usually use (almost) without any change!  In our implementation, we adopt the strategy of a consistent one-to-one match between CPU worker with GPU by setting GPU index as below. [code language=”C”] // for multiple GPU case cudaSetDevice(gpuID); [/code]</p>
+<h4 id="Performance-Showcase"><a href="#Performance-Showcase" class="headerlink" title="Performance Showcase"></a>Performance Showcase</h4><p>Finally, we analyzed the performance of CPU and GPU code. The line plot shows the strong scalability of native R code (1 hidden layer and 512 neurons). And compared with H2O, native R exhibits good scalability with the number of thread increase. Look at GPU parts, one thread with one GPU is faster than 20 threads CPU implementation (both native R and H2O). Next, look at GPU scalability in bar plot where <strong>5 times</strong> speedup under 6 GPUs are reached and our algorithm achieved <strong>160 times</strong> speedup compared with original R code. Testing on : CPU:  Ivy Bridge E5-2690 v2 @ 3.00GHz, dual socket 10-core, 128G RAM;  GPU: NVIDIA K40m,  12G RAM <a target="_blank" rel="noopener" href="http://www.parallelr.com/wp-content/uploads/2016/03/MultiGPU_Runtime.png"><img src="http://www.parallelr.com/wp-content/uploads/2016/03/MultiGPU_Runtime.png" alt="MultiGPU_Runtime"></a></p>
+<p><a target="_blank" rel="noopener" href="http://www.parallelr.com/wp-content/uploads/2016/03/MultiGPU_Speedup.png"><img src="http://www.parallelr.com/wp-content/uploads/2016/03/MultiGPU_Speedup.png" alt="MultiGPU_Speedup"></a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://jitmatrix.github.io/oneXPU/2016/05/09/r-dnn-cuda-multigpu/" data-id="ckivbgfq8000jwpolevup0bke" data-title="R for Deep Learning (III): CUDA and MultiGPUs Acceleration" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/CUDA/" rel="tag">CUDA</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/H2O/" rel="tag">H2O</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/R/" rel="tag">R</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/deep-learning/" rel="tag">deep learning</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/machine-learning/" rel="tag">machine learning</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/multicores/" rel="tag">multicores</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mutltiGPU/" rel="tag">mutltiGPU</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/parallel-computing/" rel="tag">parallel computing</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/profiling/" rel="tag">profiling</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rstats/" rel="tag">rstats</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/snow/" rel="tag">snow</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2016/07/26/r-and-openmp-boosting-compiled-code-on-multi-core-cpu-s/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          R and openMP: boosting compiled code on multi-core cpu-s
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2016/05/04/r-gpu-programming-for-all-with-gpur/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">R - GPU Programming for All with &#39;gpuR&#39;</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Accelerators/">Accelerators</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Accelerators/GPGPU/">GPGPU</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Accelerators/GPGPU/MultiCores/">MultiCores</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Accelerators/GPGPU/Performance-Optimizaiton/">Performance Optimizaiton</a></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Accelerators/General/">General</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Accelerators/General/GPGPU/">GPGPU</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Accelerators/General/GPGPU/MultiCores/">MultiCores</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Accelerators/General/GPGPU/MultiCores/Performance-Optimizaiton/">Performance Optimizaiton</a></li></ul></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Accelerators/General/MPI/">MPI</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Accelerators/General/MPI/MultiCores/">MultiCores</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Accelerators/General/MPI/MultiCores/Performance-Optimizaiton/">Performance Optimizaiton</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Accelerators/General/MPI/MultiCores/Performance-Optimizaiton/Vectorization/">Vectorization</a></li></ul></li></ul></li></ul></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Accelerators/MultiCores/">MultiCores</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Accelerators/MultiCores/Performance-Optimizaiton/">Performance Optimizaiton</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Accelerators/MultiCores/Vectorization/">Vectorization</a></li></ul></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/GPGPU/">GPGPU</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/GPGPU/Intel-Xeon-Phi/">Intel Xeon Phi</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/GPGPU/MultiCores/">MultiCores</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/GPGPU/MultiCores/Performance-Optimizaiton/">Performance Optimizaiton</a></li></ul></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/General/">General</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/General/MultiCores/">MultiCores</a></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Uncategorized/">Uncategorized</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/BLAS/" rel="tag">BLAS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CRAN/" rel="tag">CRAN</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CUDA/" rel="tag">CUDA</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GEMM/" rel="tag">GEMM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GPU/" rel="tag">GPU</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/H2O/" rel="tag">H2O</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HPAC/" rel="tag">HPAC</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HPC/" rel="tag">HPC</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MIC/" rel="tag">MIC</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MKL/" rel="tag">MKL</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MNIST/" rel="tag">MNIST</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Maximum-Likelihood/" rel="tag">Maximum Likelihood</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/R/" rel="tag">R</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Rcpp/" rel="tag">Rcpp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SSE/" rel="tag">SSE</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Xeon/" rel="tag">Xeon</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Xeon-Phi/" rel="tag">Xeon Phi</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/benchmark/" rel="tag">benchmark</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/big-data/" rel="tag">big data</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/boost/" rel="tag">boost</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/classification/" rel="tag">classification</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cuBLAS/" rel="tag">cuBLAS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/data-analytics/" rel="tag">data analytics</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/deep-learning/" rel="tag">deep learning</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dnn/" rel="tag">dnn</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/doMC/" rel="tag">doMC</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/doParallel/" rel="tag">doParallel</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/foreach/" rel="tag">foreach</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gmatrix/" rel="tag">gmatrix</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gpuR/" rel="tag">gpuR</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gputools/" rel="tag">gputools</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/high-performance/" rel="tag">high performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/iris/" rel="tag">iris</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/knn/" rel="tag">knn</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/lightboost/" rel="tag">lightboost</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/machine-learing/" rel="tag">machine learing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/machine-learning/" rel="tag">machine learning</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mcapply/" rel="tag">mcapply</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/memory-usage/" rel="tag">memory usage</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/multicores/" rel="tag">multicores</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/multit/" rel="tag">multit</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/multithreads/" rel="tag">multithreads</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mutlithreading/" rel="tag">mutlithreading</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mutltiGPU/" rel="tag">mutltiGPU</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/neural-network/" rel="tag">neural network</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nvblas/" rel="tag">nvblas</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/openMP/" rel="tag">openMP</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/openblas/" rel="tag">openblas</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/parallel/" rel="tag">parallel</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/parallel-computing/" rel="tag">parallel computing</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/parlapply/" rel="tag">parlapply</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/performance-optimization/" rel="tag">performance optimization</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/profiling/" rel="tag">profiling</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/" rel="tag">python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rstats/" rel="tag">rstats</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sklearn/" rel="tag">sklearn</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/snow/" rel="tag">snow</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/xgboost/" rel="tag">xgboost</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/BLAS/" style="font-size: 10px;">BLAS</a> <a href="/tags/CRAN/" style="font-size: 10px;">CRAN</a> <a href="/tags/CUDA/" style="font-size: 12px;">CUDA</a> <a href="/tags/GEMM/" style="font-size: 12px;">GEMM</a> <a href="/tags/GPU/" style="font-size: 14px;">GPU</a> <a href="/tags/H2O/" style="font-size: 12px;">H2O</a> <a href="/tags/HPAC/" style="font-size: 10px;">HPAC</a> <a href="/tags/HPC/" style="font-size: 12px;">HPC</a> <a href="/tags/MIC/" style="font-size: 10px;">MIC</a> <a href="/tags/MKL/" style="font-size: 14px;">MKL</a> <a href="/tags/MNIST/" style="font-size: 10px;">MNIST</a> <a href="/tags/Maximum-Likelihood/" style="font-size: 10px;">Maximum Likelihood</a> <a href="/tags/R/" style="font-size: 20px;">R</a> <a href="/tags/Rcpp/" style="font-size: 10px;">Rcpp</a> <a href="/tags/SSE/" style="font-size: 10px;">SSE</a> <a href="/tags/Xeon/" style="font-size: 10px;">Xeon</a> <a href="/tags/Xeon-Phi/" style="font-size: 10px;">Xeon Phi</a> <a href="/tags/benchmark/" style="font-size: 10px;">benchmark</a> <a href="/tags/big-data/" style="font-size: 10px;">big data</a> <a href="/tags/boost/" style="font-size: 10px;">boost</a> <a href="/tags/classification/" style="font-size: 10px;">classification</a> <a href="/tags/cuBLAS/" style="font-size: 16px;">cuBLAS</a> <a href="/tags/data-analytics/" style="font-size: 12px;">data analytics</a> <a href="/tags/deep-learning/" style="font-size: 14px;">deep learning</a> <a href="/tags/dnn/" style="font-size: 12px;">dnn</a> <a href="/tags/doMC/" style="font-size: 10px;">doMC</a> <a href="/tags/doParallel/" style="font-size: 10px;">doParallel</a> <a href="/tags/foreach/" style="font-size: 10px;">foreach</a> <a href="/tags/gmatrix/" style="font-size: 10px;">gmatrix</a> <a href="/tags/gpuR/" style="font-size: 10px;">gpuR</a> <a href="/tags/gputools/" style="font-size: 10px;">gputools</a> <a href="/tags/high-performance/" style="font-size: 10px;">high performance</a> <a href="/tags/iris/" style="font-size: 10px;">iris</a> <a href="/tags/knn/" style="font-size: 10px;">knn</a> <a href="/tags/lightboost/" style="font-size: 10px;">lightboost</a> <a href="/tags/machine-learing/" style="font-size: 10px;">machine learing</a> <a href="/tags/machine-learning/" style="font-size: 12px;">machine learning</a> <a href="/tags/mcapply/" style="font-size: 10px;">mcapply</a> <a href="/tags/memory-usage/" style="font-size: 10px;">memory usage</a> <a href="/tags/multicores/" style="font-size: 18px;">multicores</a> <a href="/tags/multit/" style="font-size: 10px;">multit</a> <a href="/tags/multithreads/" style="font-size: 10px;">multithreads</a> <a href="/tags/mutlithreading/" style="font-size: 10px;">mutlithreading</a> <a href="/tags/mutltiGPU/" style="font-size: 10px;">mutltiGPU</a> <a href="/tags/neural-network/" style="font-size: 10px;">neural network</a> <a href="/tags/nvblas/" style="font-size: 10px;">nvblas</a> <a href="/tags/openMP/" style="font-size: 12px;">openMP</a> <a href="/tags/openblas/" style="font-size: 12px;">openblas</a> <a href="/tags/parallel/" style="font-size: 10px;">parallel</a> <a href="/tags/parallel-computing/" style="font-size: 18px;">parallel computing</a> <a href="/tags/parlapply/" style="font-size: 10px;">parlapply</a> <a href="/tags/performance-optimization/" style="font-size: 16px;">performance optimization</a> <a href="/tags/profiling/" style="font-size: 12px;">profiling</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/rstats/" style="font-size: 20px;">rstats</a> <a href="/tags/sklearn/" style="font-size: 10px;">sklearn</a> <a href="/tags/snow/" style="font-size: 10px;">snow</a> <a href="/tags/xgboost/" style="font-size: 10px;">xgboost</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">April 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">January 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/09/">September 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">August 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">July 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">May 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">April 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">March 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">February 2016</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2017/04/07/r-hpac-benchmark-analysis-gpu/">R benchmark for High-Performance Analytics and Computing (II): GPU Packages</a>
+          </li>
+        
+          <li>
+            <a href="/2017/01/24/parallel-computation-with-r-and-xgboost/">Parallel Computation with R and XGBoost</a>
+          </li>
+        
+          <li>
+            <a href="/2016/09/10/r-with-parallel-computing/">R with Parallel Computing from User Perspectives</a>
+          </li>
+        
+          <li>
+            <a href="/2016/08/15/r-cran-package-modernization-openmp/">R and OpenMP:  CRAN Package Modernization</a>
+          </li>
+        
+          <li>
+            <a href="/2016/07/26/r-and-openmp-boosting-compiled-code-on-multi-core-cpu-s/">R and openMP: boosting compiled code on multi-core cpu-s</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2020 John Doe<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.4.1.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>

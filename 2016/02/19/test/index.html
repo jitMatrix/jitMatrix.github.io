@@ -4,13 +4,17 @@
   <meta charset="utf-8">
   
   
-  <title>Archives | Hexo</title>
+  <title>test | Hexo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="Hexo">
-<meta property="og:url" content="https://jitmatrix.github.io/oneXPU/archives/index.html">
+  <meta name="description" content="Recurrent-Neural-Network(RNN) gives state-of-the-art results in automatic speech recognition, stock market prediction, handwriting recognition and other sequence learning problems. In RNN layer, weigh">
+<meta property="og:type" content="article">
+<meta property="og:title" content="test">
+<meta property="og:url" content="https://jitmatrix.github.io/oneXPU/2016/02/19/test/index.html">
 <meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="Recurrent-Neural-Network(RNN) gives state-of-the-art results in automatic speech recognition, stock market prediction, handwriting recognition and other sequence learning problems. In RNN layer, weigh">
 <meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2016-02-19T05:07:04.000Z">
+<meta property="article:modified_time" content="2020-12-19T06:24:12.240Z">
 <meta property="article:author" content="John Doe">
 <meta name="twitter:card" content="summary">
   
@@ -69,226 +73,67 @@
 </header>
 
       <div class="outer">
-        <section id="main">
-  
-  
-    
-    
-      
-      
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2017" class="archive-year">2017</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2017/04/07/r-hpac-benchmark-analysis-gpu/" class="archive-article-date">
-  <time class="dt-published" datetime="2017-04-07T12:38:10.000Z" itemprop="datePublished">Apr 7</time>
+        <section id="main"><article id="post-test" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2016/02/19/test/" class="article-date">
+  <time class="dt-published" datetime="2016-02-19T05:07:04.000Z" itemprop="datePublished">2016-02-19</time>
 </a>
-      
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Uncategorized/">Uncategorized</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
   
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2017/04/07/r-hpac-benchmark-analysis-gpu/">R benchmark for High-Performance Analytics and Computing (II): GPU Packages</a>
+    <h1 class="p-name article-title" itemprop="headline name">
+      test
     </h1>
   
 
-    </header>
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <p><strong>Recurrent-Neural-Network(RNN) gives state-of-the-art results in automatic speech recognition, stock market prediction, handwriting recognition and other sequence learning problems. In RNN layer, weight matrix is shared among all timesteps, but general cuda-based RNN implementations don’t utilize this characteristic and weight matrix has to be loaded every recurrent step. Especially in inference stage, when batch size is small, the performance of RNN is limited by memory bandwidth. In this talk, I will introduce a persistent thread method to accelerate RNN on GPU. In this method, whole weight matrix is stored into GPU registers to avoid repeated memory loads, and a CTA spinlock is implemented to achieve global synchronization. The result shows significant speedup on Maxwell architecture.</strong> Most researchers uses cuBLAS to implement RNN on GPU. But unlike DNN, data dependent behavior of RNN makes it hard to achieve peak utilization, which make RNN become major bottleneck in practical applications. The basic equations representing one forward stage of a RNN layer from timestep t-1 to timestep t is: h_t = g(W_r * h_t-1 + b_t) (1) b_t is the result at time t in pervious layer; h_t-1 is the result at timestep t-1 in RNN layer; weight matrix W_r is shared among all timesteps in RNN layer. In RNN layer, the result of h_t depends on the result of h_t-1. If total timesteps size is N, the general RNN implementations need call GEMV/GEMM(call GEMV, if batch size is 1; or call GEMM, if batch size &gt;1) N times. General implementations doesn’t utilize the characteristic that weight matrix W_r is shared among all timesteps, so weight matrix has to be loaded N times(usually N &gt; 100). When batch size is small, GEMM performance memory is limited by memory bandwidth. If we can keep weight matrix into SM registers, we can reduce hundreds of times weight matrix loads and change performance limitation from memory bandwidth to compute throughput. In this talk, I will present a persistent thread method to speedup RNN layer. My implementation can keep 1152*1152*4B=5.0625MB size weight matrix into registers, which takes 84.4% of total register size of GeForce GTX TITAN X(6MB). A CTA spinlock is used to achieve global synchronization. To avoid deadlock, all warps must be active. So occupancy is limited to 8 warps per SM, and each thread can use up to 256 registers (Finally, each thread uses 253 registers, which 216 registers are used to store weights and 37 registers are used to control). The baseline implementation is executing 1152*1152 size cublasSgemv and 1152 size vectorAdd 256 times on GeForce GTX TITAN X. (1152*1152 size cublasSgemv can achieve 52% memory bandwidth). The result shows persistent thread method can achieve 15X speedup on GeForce GTX TITAN X. If using fp16, we can keep 1152*sqrt(2) weights. If GPU had more registers, we could support RNN with larger weight matrix. Future works: 1) make persistent thread method support batch size &gt;1 and 2) spread this method to GRU and general LSTM network.</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://jitmatrix.github.io/oneXPU/2016/02/19/test/" data-id="ckivbgfqg000uwpol0v25g1df" data-title="test" class="article-share-link">Share</a>
+      
+      
+      
+    </footer>
   </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2016/03/08/r-dnn-parallel-acceleration/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          R for Deep Learning (II): Achieve High-Performance DNN with Parallel Acceleration
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2016/02/13/r-deep-neural-network-from-scratch/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">R for Deep Learning (I):  Build Fully Connected Neural Network from Scratch</div>
+    </a>
+  
+</nav>
+
+  
 </article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2017/01/24/parallel-computation-with-r-and-xgboost/" class="archive-article-date">
-  <time class="dt-published" datetime="2017-01-24T05:05:13.000Z" itemprop="datePublished">Jan 24</time>
-</a>
-      
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2017/01/24/parallel-computation-with-r-and-xgboost/">Parallel Computation with R and XGBoost</a>
-    </h1>
-  
 
-    </header>
-  </div>
-</article>
-  
-    
-    
-      
-        </div></section>
-      
-      
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2016" class="archive-year">2016</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2016/09/10/r-with-parallel-computing/" class="archive-article-date">
-  <time class="dt-published" datetime="2016-09-10T09:10:31.000Z" itemprop="datePublished">Sep 10</time>
-</a>
-      
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2016/09/10/r-with-parallel-computing/">R with Parallel Computing from User Perspectives</a>
-    </h1>
-  
-
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2016/08/15/r-cran-package-modernization-openmp/" class="archive-article-date">
-  <time class="dt-published" datetime="2016-08-15T02:55:52.000Z" itemprop="datePublished">Aug 15</time>
-</a>
-      
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2016/08/15/r-cran-package-modernization-openmp/">R and OpenMP:  CRAN Package Modernization</a>
-    </h1>
-  
-
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2016/07/26/r-and-openmp-boosting-compiled-code-on-multi-core-cpu-s/" class="archive-article-date">
-  <time class="dt-published" datetime="2016-07-26T18:10:38.000Z" itemprop="datePublished">Jul 26</time>
-</a>
-      
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2016/07/26/r-and-openmp-boosting-compiled-code-on-multi-core-cpu-s/">R and openMP: boosting compiled code on multi-core cpu-s</a>
-    </h1>
-  
-
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2016/05/09/r-dnn-cuda-multigpu/" class="archive-article-date">
-  <time class="dt-published" datetime="2016-05-09T00:00:08.000Z" itemprop="datePublished">May 9</time>
-</a>
-      
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2016/05/09/r-dnn-cuda-multigpu/">R for Deep Learning (III): CUDA and MultiGPUs Acceleration</a>
-    </h1>
-  
-
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2016/05/04/r-gpu-programming-for-all-with-gpur/" class="archive-article-date">
-  <time class="dt-published" datetime="2016-05-04T13:52:08.000Z" itemprop="datePublished">May 4</time>
-</a>
-      
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2016/05/04/r-gpu-programming-for-all-with-gpur/">R - GPU Programming for All with &#39;gpuR&#39;</a>
-    </h1>
-  
-
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2016/04/15/r-hpac-benchmark-analysis/" class="archive-article-date">
-  <time class="dt-published" datetime="2016-04-15T05:10:18.000Z" itemprop="datePublished">Apr 15</time>
-</a>
-      
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2016/04/15/r-hpac-benchmark-analysis/">R benchmark for High-Performance Analytics and Computing (I):Accelerators</a>
-    </h1>
-  
-
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2016/03/08/r-dnn-parallel-acceleration/" class="archive-article-date">
-  <time class="dt-published" datetime="2016-03-08T14:18:34.000Z" itemprop="datePublished">Mar 8</time>
-</a>
-      
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2016/03/08/r-dnn-parallel-acceleration/">R for Deep Learning (II): Achieve High-Performance DNN with Parallel Acceleration</a>
-    </h1>
-  
-
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2016/02/19/test/" class="archive-article-date">
-  <time class="dt-published" datetime="2016-02-19T05:07:04.000Z" itemprop="datePublished">Feb 19</time>
-</a>
-      
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2016/02/19/test/">test</a>
-    </h1>
-  
-
-    </header>
-  </div>
-</article>
-  
-  
-    </div></section>
-  
-
-
-  <nav id="page-nav">
-    
-    <span class="page-number current">1</span><a class="page-number" href="/archives/page/2/">2</a><a class="extend next" rel="next" href="/archives/page/2/">Next &raquo;</a>
-  </nav>
 
 </section>
         

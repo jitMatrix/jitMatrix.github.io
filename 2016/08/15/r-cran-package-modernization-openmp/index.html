@@ -4,15 +4,27 @@
   <meta charset="utf-8">
   
   
-  <title>Archives | Hexo</title>
+  <title>R and OpenMP:  CRAN Package Modernization | Hexo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="Hexo">
-<meta property="og:url" content="https://jitmatrix.github.io/oneXPU/archives/index.html">
+  <meta name="description" content="Indeed, a major current trend in R is what might be called “R+X”, where X is some other language or library. –Norman Matloff, Parallel Computing for Data Science  IntroductionNowadays, there are more">
+<meta property="og:type" content="article">
+<meta property="og:title" content="R and OpenMP:  CRAN Package Modernization">
+<meta property="og:url" content="https://jitmatrix.github.io/oneXPU/2016/08/15/r-cran-package-modernization-openmp/index.html">
 <meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="Indeed, a major current trend in R is what might be called “R+X”, where X is some other language or library. –Norman Matloff, Parallel Computing for Data Science  IntroductionNowadays, there are more">
 <meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://www.parallelr.com/wp-content/uploads/2016/05/cycle-2.png">
+<meta property="og:image" content="http://www.parallelr.com/wp-content/uploads/2016/05/KNN-3.png">
+<meta property="article:published_time" content="2016-08-15T02:55:52.000Z">
+<meta property="article:modified_time" content="2020-12-19T06:24:12.240Z">
 <meta property="article:author" content="John Doe">
+<meta property="article:tag" content="rstats">
+<meta property="article:tag" content="openMP">
+<meta property="article:tag" content="R">
+<meta property="article:tag" content="CRAN">
+<meta property="article:tag" content="knn">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://www.parallelr.com/wp-content/uploads/2016/05/cycle-2.png">
   
     <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
   
@@ -69,226 +81,74 @@
 </header>
 
       <div class="outer">
-        <section id="main">
-  
-  
-    
-    
-      
-      
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2017" class="archive-year">2017</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2017/04/07/r-hpac-benchmark-analysis-gpu/" class="archive-article-date">
-  <time class="dt-published" datetime="2017-04-07T12:38:10.000Z" itemprop="datePublished">Apr 7</time>
+        <section id="main"><article id="post-r-cran-package-modernization-openmp" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2016/08/15/r-cran-package-modernization-openmp/" class="article-date">
+  <time class="dt-published" datetime="2016-08-15T02:55:52.000Z" itemprop="datePublished">2016-08-15</time>
 </a>
-      
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Accelerators/">Accelerators</a>►<a class="article-category-link" href="/categories/Accelerators/MultiCores/">MultiCores</a>►<a class="article-category-link" href="/categories/Accelerators/MultiCores/Performance-Optimizaiton/">Performance Optimizaiton</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
   
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2017/04/07/r-hpac-benchmark-analysis-gpu/">R benchmark for High-Performance Analytics and Computing (II): GPU Packages</a>
+    <h1 class="p-name article-title" itemprop="headline name">
+      R and OpenMP:  CRAN Package Modernization
     </h1>
   
 
-    </header>
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <hr>
+<p><em>Indeed, a major current trend in R is what might be called “R+X”, where X is some other language or library.</em> <em>–Norman Matloff, Parallel Computing for Data Science</em></p>
+<hr>
+<h1 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h1><p><strong>Nowadays,</strong> there are more than 8000 packages in CRAN (till April 2016 from Revolution Analytics  <a target="_blank" rel="noopener" href="http://blog.revolutionanalytics.com/2016/04/a-segmented-model-of-cran-package-growth.html">Blog</a>) and even more, packages locate in GitHub and R-forge. Meanwhile, most of us heavily rely on these packages for our daily analytical work. With the increasing amount of data as well as the diversification of data sources (such as image, speech, and video), data scientists will be experience performance issues.  Though there already have parallel solutions for us (check out <a target="_blank" rel="noopener" href="https://cran.r-project.org/web/views/HighPerformanceComputing.html">HPCR list</a>), we will fall into the case soon or later that no parallelized package is available in CRAN or GitHub. Therefore, we have to consider to implement specified parallel algorithm by ourselves. In general, you can design and implement the parallel algorithm from scratch or parallelize the existing packages.  If you are working on writing the parallel code from scratch, I recommend Prof. Matloff’s new book_, <a target="_blank" rel="noopener" href="https://www.amazon.com/Parallel-Computing-Data-Science-Examples/dp/1466587016">Parallel Computing for Data Science</a>_, and Dr. OTT’s blog <em><a target="_blank" rel="noopener" href="http://www.parallelr.com/r-and-openmp-boosting-compiled-code-on-multi-core-cpu-s/">R and openMP: boosting compiled code on multi-core cpu-s</a>.</em> In this post, I will introduce the basic workflow and skills for accelerating legacy R package by OpenMP, and this produce is called <a target="_blank" rel="noopener" href="https://software.intel.com/en-us/articles/what-is-code-modernization">code modernization</a>. Sometimes, acceleration legacy code is more challenge than writing parallel algorithm by yourself because we have to work on original software architecture and implementation, and try to minimal changes as much as possible. In below cycle chart, I illustrate several basic steps of code modernization and I am going to introduce each of steps in the below chapters with <a target="_blank" rel="noopener" href="https://cran.r-project.org/web/packages/class/class.pdf">KNN {class}</a> function, written by Prof. Brian Ripley, for example.   <a target="_blank" rel="noopener" href="http://www.parallelr.com/wp-content/uploads/2016/05/cycle-2.png"><img src="http://www.parallelr.com/wp-content/uploads/2016/05/cycle-2.png"></a>  </p>
+<h1 id="Understand-Algorithm-and-Code"><a href="#Understand-Algorithm-and-Code" class="headerlink" title="Understand Algorithm and Code"></a>Understand Algorithm and Code</h1><p>First and most important step before speedup code is to understand the original algorithm and implementation as much as possible ranging from data structure, functionality to coding. Now, let us start with our example of <em>class</em> package and the major function of K nearest neighbors algorithm (<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/K-nearest_neighbors_algorithm">KNN</a>). The algorithm of KNN can be shown as below chart. There are three steps. First, compute the distance from each observation of train dataset to each of test dataset, and then select K nearest from distance results (the direct approach is to sort the results and select first K elements). Finally, most voted group will win, or if several groups have the same accounts, just <strong>RANDOM</strong> breaking (Notes: this random breaking will cause little trouble in parallel version, consider why, and I will give more details later). <a target="_blank" rel="noopener" href="http://www.parallelr.com/wp-content/uploads/2016/05/KNN-3.png"><img src="http://www.parallelr.com/wp-content/uploads/2016/05/KNN-3.png"></a>   Next, we’re going through the source code and match each step of KNN with their implementations. Checking the body of R Knn, you can see the real algorithm is locate in C level and R function is only a wrapper. [code language=”r”] &gt;library(class) &gt;knn function (train, test, cl, k = 1, l = 0, prob = FALSE, use.all = TRUE) { # skip Z &lt;- .C(VR_knn, as.integer(k), as.integer(l), as.integer(ntr),….)) # skip } [/code] So, switching to VR_knn function in your local repository (class.c) or from GitHub (<a target="_blank" rel="noopener" href="https://github.com/cran/class/blob/master/src/class.c">here</a>), totally there are about 100 lines. And the code is organized very clearly and we can quickly identify the 3 steps with my highlight comments. [code language=”C”] VR_knn(Sint *kin, Sint *lin, Sint *pntr, Sint *pnte, Sint *p, double *train, Sint *class, double *test, Sint *res, double *pr, Sint *votes, Sint *nc, Sint *cv, Sint *use_all) { // skip … // Peng: main loop for (npat = 0; npat &lt; nte; npat++) { // Peng: Step.1 – compute distance for (k = 0; k &lt; *p; k++) { tmp = test[npat + k * nte] - train[j + k * ntr]; dist += tmp * tmp; } // skip … // Peng: Step.2 – select K nearest /* Use ‘fuzz’ since distance computed could depend on order of coordinates */ if (dist &lt;= nndist[kinit - 1] * (1 + EPS)) for (k = 0; k &lt;= kn; k++) if (dist &lt; nndist[k]) { for (k1 = kn; k1 &gt; k; k1–) { nndist[k1] = nndist[k1 - 1]; pos[k1] = pos[k1 - 1]; } // Peng: Step.3 – voting and breaking for (j = 0; j &lt;= *nc; j++) votes[j] = 0; if (*use_all) { for (j = 0; j &lt;; kinit; j++) // skip … } &lt;span class=”pl-k”&gt;else&lt;/span&gt; { &lt;span class=”pl-c”&gt;/* break ties at random */ &lt;/span&gt; // skip … } // Peng: Final results res[npat] = index; pr[npat] = (double) mm / (kinit + extras); } // Peng: end of main loop RANDOUT; } [/code]</p>
+<h1 id="Identify-Bottleneck"><a href="#Identify-Bottleneck" class="headerlink" title="Identify Bottleneck"></a>Identify Bottleneck</h1><p>Two kinds of applications for parallelization can be divided into computer and memory intensive. OpenMP is used to resolve compute-intensive applications with multiple threads while message passing interface (<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Message_Passing_Interface">MPI</a>) can be applied reduce local memory requirements by distributing the application in different machines. Therefore, we need to determine whether the package we are dealing with is compute-intensive and where the most time-consuming parts are. To do this, we can do a simple complexity analysis from algorithm view. Still using KNN for example as our description, we see the computational complexity in Step 1 is O(M*N*Q) since we iterate through train (M lines) and test (N lines) dataset and compute the distance with K features. Step 2 is sorting and the worst computational complexity is O(M*K) and Step 3 is only the linear complexity of O(K). Regarding with memory requirements, the most size is the two input dataset with O(M*Q) and O(N*Q) in Step 1. Totally, the computational complexity of KNN is <strong>THREE</strong> power while the memory usage is only <strong>TWO</strong> power. So, the OpenMP is appropriate.</p>
+<h1 id="Specify-Parallel-Region"><a href="#Specify-Parallel-Region" class="headerlink" title="Specify Parallel Region"></a>Specify Parallel Region</h1>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://jitmatrix.github.io/oneXPU/2016/08/15/r-cran-package-modernization-openmp/" data-id="ckivbgfq4000gwpol7stzh8hq" data-title="R and OpenMP:  CRAN Package Modernization" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/CRAN/" rel="tag">CRAN</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/R/" rel="tag">R</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/knn/" rel="tag">knn</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/openMP/" rel="tag">openMP</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rstats/" rel="tag">rstats</a></li></ul>
+
+    </footer>
   </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2016/09/10/r-with-parallel-computing/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          R with Parallel Computing from User Perspectives
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2016/07/26/r-and-openmp-boosting-compiled-code-on-multi-core-cpu-s/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">R and openMP: boosting compiled code on multi-core cpu-s</div>
+    </a>
+  
+</nav>
+
+  
 </article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2017/01/24/parallel-computation-with-r-and-xgboost/" class="archive-article-date">
-  <time class="dt-published" datetime="2017-01-24T05:05:13.000Z" itemprop="datePublished">Jan 24</time>
-</a>
-      
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2017/01/24/parallel-computation-with-r-and-xgboost/">Parallel Computation with R and XGBoost</a>
-    </h1>
-  
 
-    </header>
-  </div>
-</article>
-  
-    
-    
-      
-        </div></section>
-      
-      
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2016" class="archive-year">2016</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2016/09/10/r-with-parallel-computing/" class="archive-article-date">
-  <time class="dt-published" datetime="2016-09-10T09:10:31.000Z" itemprop="datePublished">Sep 10</time>
-</a>
-      
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2016/09/10/r-with-parallel-computing/">R with Parallel Computing from User Perspectives</a>
-    </h1>
-  
-
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2016/08/15/r-cran-package-modernization-openmp/" class="archive-article-date">
-  <time class="dt-published" datetime="2016-08-15T02:55:52.000Z" itemprop="datePublished">Aug 15</time>
-</a>
-      
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2016/08/15/r-cran-package-modernization-openmp/">R and OpenMP:  CRAN Package Modernization</a>
-    </h1>
-  
-
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2016/07/26/r-and-openmp-boosting-compiled-code-on-multi-core-cpu-s/" class="archive-article-date">
-  <time class="dt-published" datetime="2016-07-26T18:10:38.000Z" itemprop="datePublished">Jul 26</time>
-</a>
-      
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2016/07/26/r-and-openmp-boosting-compiled-code-on-multi-core-cpu-s/">R and openMP: boosting compiled code on multi-core cpu-s</a>
-    </h1>
-  
-
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2016/05/09/r-dnn-cuda-multigpu/" class="archive-article-date">
-  <time class="dt-published" datetime="2016-05-09T00:00:08.000Z" itemprop="datePublished">May 9</time>
-</a>
-      
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2016/05/09/r-dnn-cuda-multigpu/">R for Deep Learning (III): CUDA and MultiGPUs Acceleration</a>
-    </h1>
-  
-
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2016/05/04/r-gpu-programming-for-all-with-gpur/" class="archive-article-date">
-  <time class="dt-published" datetime="2016-05-04T13:52:08.000Z" itemprop="datePublished">May 4</time>
-</a>
-      
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2016/05/04/r-gpu-programming-for-all-with-gpur/">R - GPU Programming for All with &#39;gpuR&#39;</a>
-    </h1>
-  
-
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2016/04/15/r-hpac-benchmark-analysis/" class="archive-article-date">
-  <time class="dt-published" datetime="2016-04-15T05:10:18.000Z" itemprop="datePublished">Apr 15</time>
-</a>
-      
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2016/04/15/r-hpac-benchmark-analysis/">R benchmark for High-Performance Analytics and Computing (I):Accelerators</a>
-    </h1>
-  
-
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2016/03/08/r-dnn-parallel-acceleration/" class="archive-article-date">
-  <time class="dt-published" datetime="2016-03-08T14:18:34.000Z" itemprop="datePublished">Mar 8</time>
-</a>
-      
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2016/03/08/r-dnn-parallel-acceleration/">R for Deep Learning (II): Achieve High-Performance DNN with Parallel Acceleration</a>
-    </h1>
-  
-
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2016/02/19/test/" class="archive-article-date">
-  <time class="dt-published" datetime="2016-02-19T05:07:04.000Z" itemprop="datePublished">Feb 19</time>
-</a>
-      
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2016/02/19/test/">test</a>
-    </h1>
-  
-
-    </header>
-  </div>
-</article>
-  
-  
-    </div></section>
-  
-
-
-  <nav id="page-nav">
-    
-    <span class="page-number current">1</span><a class="page-number" href="/archives/page/2/">2</a><a class="extend next" rel="next" href="/archives/page/2/">Next &raquo;</a>
-  </nav>
 
 </section>
         
